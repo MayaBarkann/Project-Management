@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -22,8 +24,8 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", referencedColumnName = "id")
     private User admin;
-//    @ElementCollection(targetClass=String.class)
-//    private List<String> types;
-//    @ElementCollection(targetClass=String.class)
-//    private List<String> statuses;
+    //@ElementCollection(targetClass=String.class)
+    private HashSet<String> types;
+    //@ElementCollection(targetClass=String.class)
+    private HashSet<String> statuses;
 }
