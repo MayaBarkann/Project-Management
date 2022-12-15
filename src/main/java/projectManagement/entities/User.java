@@ -2,8 +2,12 @@ package projectManagement.entities;
 
 import javax.persistence.*;
 import java.util.Set;
+import lombok.Getter;
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
+@Getter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
