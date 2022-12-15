@@ -1,5 +1,6 @@
 package projectManagement.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,17 +16,28 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 public class Board {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
     @Column(nullable = false)
     private String title;
-    @JsonIncludeProperties(value = {"id"})
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", referencedColumnName = "id")
+
+    @ManyToOne()
+    @JoinColumn(nullable = false)
     private User admin;
-    //@ElementCollection(targetClass=String.class)
+
     private HashSet<String> types;
-    //@ElementCollection(targetClass=String.class)
+
     private HashSet<String> statuses;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Item> items;
+
+    public Board(String title, User admin) {
+        this.title = title;
+        this.admin = admin;
+    }
+    
 }
