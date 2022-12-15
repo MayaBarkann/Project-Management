@@ -17,6 +17,7 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 public class Board {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -34,4 +35,18 @@ public class Board {
 
     @ElementCollection(targetClass=String.class)
     private Set<String> statuses =new HashSet<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Item> items;
+
+    public Board(String title, User admin) {
+        this.title = title;
+        this.admin = admin;
+    }
+
+
+//    @ElementCollection(targetClass=String.class)
+//    private List<String> types;
+//    @ElementCollection(targetClass=String.class)
+//    private List<String> statuses;
 }
