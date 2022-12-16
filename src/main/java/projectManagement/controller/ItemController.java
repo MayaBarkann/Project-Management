@@ -176,5 +176,27 @@ public class ItemController {
 
     }
 
+    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody AssignToUserDTO assignToUserDTO) {
+
+        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
+        if (!foundUser.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
+        }
+        User assignedToUser = foundUser.get();
+        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
 
 }

@@ -2,10 +2,7 @@ package projectManagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import projectManagement.controller.entities.AddItemType;
-import projectManagement.controller.entities.ChangeDescriptionDTO;
-import projectManagement.controller.entities.ChangeStatusDTO;
-import projectManagement.controller.entities.CreateItemDTO;
+import projectManagement.controller.entities.*;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
@@ -102,9 +99,28 @@ public class ItemService {
         return Response.createSuccessfulResponse(savedItem);
     }
 
+
+    public Response<Item> changeAssignedToUser(Long itemId, User assignedToUser) {
+        Optional<Item> itemFound = itemRepo.findById(itemId);
+        if (!itemFound.isPresent()) {
+            return Response.createFailureResponse("the item doesn't exist");
+        }
+        Item item = itemFound.get();
+
+
+        item.setAssignedToUser(assignedToUser);
+
+        Item savedItem = itemRepo.save(item);
+
+
+        return Response.createSuccessfulResponse(savedItem);
+    }
+
+
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
+
 //    public Response<Item> assignItemToUser(long boardId,long userId,Item item) {
 //        if(boardRepo.findById(boardId).isPresent()){
 //            //TODO: assignItemToUser
