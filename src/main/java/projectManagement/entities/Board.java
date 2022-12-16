@@ -28,6 +28,7 @@ public class Board {
     
     @ManyToOne()
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private User admin;
 
     private HashSet<String> types;

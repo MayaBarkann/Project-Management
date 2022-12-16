@@ -1,5 +1,6 @@
 package projectManagement.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,21 +40,25 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn()
+    @JsonIgnore
     private Item parent;
 
     @ManyToOne()
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private Board board;
 
     @ManyToOne()
     @JoinColumn()
+    @JsonIgnore
     private User assignedToUser;
 
     @ManyToOne()
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private User creator;
 
-    public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator) {
+    public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
         this.title = title;
         this.status = status;
         this.importance = importance;
@@ -61,6 +66,7 @@ public class Item {
         this.parent = parent;
         this.board = board;
         this.creator = creator;
+        this.assignedToUser = assignedToUser;
     }
 
     //    @OneToMany(mappedBy = "",cascade = CascadeType.ALL, orphanRemoval = true)

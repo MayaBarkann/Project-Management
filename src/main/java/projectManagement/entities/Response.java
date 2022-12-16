@@ -19,7 +19,7 @@ public class Response<T> {
      */
     public static<T> Response<T> createSuccessfulResponse(T data)
     {
-        return  new Response<>(true,data,null);
+        return new Response<>(true,data,null);
     }
 
     /**
