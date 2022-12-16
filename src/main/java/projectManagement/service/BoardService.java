@@ -25,6 +25,7 @@ public class BoardService {
 //        return Response.createFailureResponse("no board id like that");
     }
 
+
     public Response<Board> delete(long boardId){
         Optional<Board> board = boardRepo.findById(boardId);
         if(board.isPresent()) {
@@ -33,6 +34,7 @@ public class BoardService {
         }
         return Response.createFailureResponse("no board id like that");
     }
+
 
     public Response<Board> rename(long boardId,String name){
         Optional<Board> board = boardRepo.findById(boardId);
@@ -45,6 +47,7 @@ public class BoardService {
         }
         return Response.createFailureResponse("no board id like that");
     }
+
 
     public Response<Item> addItem(long boardId, Item item) {
         if(boardRepo.findById(boardId).isPresent()){
