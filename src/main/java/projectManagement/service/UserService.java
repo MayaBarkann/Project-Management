@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import projectManagement.entities.User;
 import projectManagement.repository.UserRepo;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class UserService {
@@ -27,5 +29,9 @@ public class UserService {
         //FIXME: add real database check, and token decoder
         long id = 2L;
         return id;
+    }
+
+    public Optional<User> getUser(long userId) {
+        return userRepo.findById(userId);
     }
 }
