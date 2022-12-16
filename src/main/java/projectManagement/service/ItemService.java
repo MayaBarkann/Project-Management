@@ -11,6 +11,8 @@ import projectManagement.repository.ItemRepo;
 
 import java.util.Optional;
 
+import java.util.Optional;
+
 @Service
 public class ItemService {
     @Autowired
@@ -26,8 +28,8 @@ public class ItemService {
         if (savedItem == null) {
             Response.createFailureResponse("can't crate a new item");
         }
-
         return Response.createSuccessfulResponse(savedItem);
+
 
     }
 
@@ -60,5 +62,12 @@ public class ItemService {
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
+//    public Response<Item> assignItemToUser(long boardId,long userId,Item item) {
+//        if(boardRepo.findById(boardId).isPresent()){
+//            //TODO: assignItemToUser
+//            return Response.createSuccessfulResponse(item);
+//        }
+//        return Response.createFailureResponse("no board id like that");
+//    }
 
 }
