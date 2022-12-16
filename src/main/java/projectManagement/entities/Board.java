@@ -2,6 +2,7 @@ package projectManagement.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Data
 @Setter
 @Getter
 @Entity
@@ -23,7 +25,7 @@ public class Board {
 
     @Column(nullable = false)
     private String title;
-
+    
     @ManyToOne()
     @JoinColumn(nullable = false)
     private User admin;
@@ -39,5 +41,5 @@ public class Board {
         this.title = title;
         this.admin = admin;
     }
-    
+
 }

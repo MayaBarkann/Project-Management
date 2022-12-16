@@ -28,7 +28,7 @@ public class UserRoleInBoard {
     private Board board;
 
     @Enumerated
-    @Column(name = "user_role")
+    @Column(name = "user_role", nullable = false)
     @Cascade(CascadeType.ALL)
     private UserRole userRole;
 

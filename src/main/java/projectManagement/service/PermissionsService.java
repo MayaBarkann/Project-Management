@@ -2,40 +2,45 @@ package projectManagement.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import projectManagement.entities.Action;
-import projectManagement.entities.PermissionsManager;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
+import projectManagement.repository.BoardRepo;
+import projectManagement.repository.UserRepo;
+import projectManagement.repository.UserRoleInBoardRepo;
 
 import java.util.Optional;
 
 public class PermissionsService {
-    UserRepository userRepository;
+    UserRoleInBoardRepo userRoleInBoardRepo;
+    UserRepo userRepo;
+    BoardRepo boardRepo;
 
     @Autowired
-    public PermissionService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public PermissionsService(UserRoleInBoardRepo userRoleInBoardRepo, UserRepo userRepo, BoardRepo boardRepo) {
+        this.userRoleInBoardRepo = userRoleInBoardRepo;
+        this.userRepo = userRepo;
+        this.boardRepo = boardRepo;
     }
 
-    /**
-     * Checks if a given user (represented by user id) has permission to perform the given action in the system.
-     *
-     * @param userId - int, id of user that we want to check if he has a permission to perform the given action.
-     * @param action - UserActions Enum, the action we need to check if the user can perform.
-     * @return Response<Boolean> object, contains failure response - if user wasn't found. returns response with false if user doesn't have permission to perform action, and response with true if user has the permission.
-     */
-    public Response<Boolean> checkPermission(int userId, int boardId, Action action) {
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (!optionalUser.isPresent()) {
+    public Response<Boolean> checkPermission(long userId, long boardId, Action action) {
+        Optional<User> user = userRepo.findById(userId);
+        Optional<Board> board = boardRepo.findById(boardId);
+
+        if (!user.isPresent()) {
             return Response.createFailureResponse(String.format("User with id: %d does not exist", userId));
         }
-        User user = optionalUser.get();
-        if( PermissionsManager.hasPermission(,action)) {
-            if(action==Actions.SendMainRoomMessage)
-            {
-                if(user.getMessageAbility()== MessageAbility.MUTED)
-                    return Response.createSuccessfulResponse(false);
-            }
+
+        if (!board.isPresent()){
+            return Response.createFailureResponse(String.format("Board with id: %d does not exists", boardId));
+        }
+
+        Optional<UserRoleInBoard> userRoleInBoard = userRoleInBoardRepo.findByUserAndBoard(user.get(), board.get());
+
+        if (!userRoleInBoard.isPresent()){
+            return Response.createFailureResponse("User does not belong to this board");
+        }
+
+        if(PermissionsManager.hasPermission(userRoleInBoard.get().getUserRole() ,action)) {
+
             return Response.createSuccessfulResponse(true);
 
         }
