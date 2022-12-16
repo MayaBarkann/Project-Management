@@ -42,7 +42,23 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemId);
     }
 
+    public Response<Item> removeType(Long itemId) {
+        Optional<Item> itemFound = itemRepo.findById(itemId);
+
+        if (!itemFound.isPresent()) {
+            return Response.createFailureResponse("the item you want to delete doesn't exists");
+        }
+        Item item = itemFound.get();
+        item.setType("");
+
+        Item savedItem = itemRepo.save(item);
+
+
+        return Response.createSuccessfulResponse(savedItem);
+    }
+
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
+
 }

@@ -1,8 +1,8 @@
 package projectManagement.controller.entities;
 
-public class DeleteItemDTO {
+public class ItemIdDTO {
     public Long itemId;
 
-    public DeleteItemDTO() {
+    public ItemIdDTO() {
     }
 }

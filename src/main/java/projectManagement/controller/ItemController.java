@@ -2,10 +2,9 @@ package projectManagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.CreateItemDTO;
-import projectManagement.controller.entities.DeleteItemDTO;
+import projectManagement.controller.entities.ItemIdDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
@@ -13,7 +12,6 @@ import projectManagement.entities.User;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
-import projectManagement.utils.Validation;
 
 import java.util.Optional;
 
@@ -89,11 +87,13 @@ public class ItemController {
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<Response<Long>> deleteItem(@RequestBody DeleteItemDTO DeleteItemId) {
-        Long itemId = DeleteItemId.itemId;
-        if (itemId == null) {
+    public ResponseEntity<Response<Long>> deleteItem(@RequestBody ItemIdDTO deleteItemId) {
+
+        if (deleteItemId == null || deleteItemId.itemId == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
         }
+
+        Long itemId = deleteItemId.itemId;
         Response<Long> response = itemService.deleteItem(itemId);
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -103,4 +103,24 @@ public class ItemController {
 
 
     }
+
+
+    @RequestMapping(value = "/type/remove", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> removeItemType(@RequestBody ItemIdDTO updateItemId) {
+
+        if (updateItemId == null || updateItemId.itemId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+        Long itemId = updateItemId.itemId;
+        Response<Item> response = itemService.removeType(itemId);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
 }
