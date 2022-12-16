@@ -3,6 +3,7 @@ package projectManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import projectManagement.controller.entities.AddItemType;
 import projectManagement.controller.entities.CreateItemDTO;
 import projectManagement.controller.entities.ItemIdDTO;
 import projectManagement.entities.Board;
@@ -113,6 +114,24 @@ public class ItemController {
         }
         Long itemId = updateItemId.itemId;
         Response<Item> response = itemService.removeType(itemId);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/type/add", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
+
+        if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.addType(addItemType);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);

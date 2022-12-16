@@ -2,6 +2,7 @@ package projectManagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import projectManagement.controller.entities.AddItemType;
 import projectManagement.controller.entities.CreateItemDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
@@ -52,6 +53,20 @@ public class ItemService {
         }
         Item item = itemFound.get();
         item.setType("");
+
+        Item savedItem = itemRepo.save(item);
+
+
+        return Response.createSuccessfulResponse(savedItem);
+    }
+
+    public Response<Item> addType(AddItemType addItemType) {
+        Optional<Item> itemFound = itemRepo.findById(addItemType.itemId);
+        if (!itemFound.isPresent()) {
+            return Response.createFailureResponse("the item you want to delete doesn't exists");
+        }
+        Item item = itemFound.get();
+        item.setType(addItemType.type);
 
         Item savedItem = itemRepo.save(item);
 
