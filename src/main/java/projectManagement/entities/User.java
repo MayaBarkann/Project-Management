@@ -2,7 +2,11 @@ package projectManagement.entities;
 
 import javax.persistence.*;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -34,5 +38,8 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public User() {
     }
 }

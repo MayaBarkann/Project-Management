@@ -26,6 +26,7 @@ public class Board {
 
     @ManyToOne()
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private User admin;
 
 
