@@ -29,8 +29,9 @@ public class UserService {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return Response.createFailureResponse("user already exist");
         }
-        return Response.createSuccessfulResponse(userRepo.save(new User(user)));
+        return Response.createSuccessfulResponse(userRepo.save(new User(user.getName(), user.getEmail(), user.getPassword())));
     }
+
     public UserService() {
     }
 
