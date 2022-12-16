@@ -3,14 +3,14 @@ package projectManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.AddItemType;
+import projectManagement.controller.entities.ChangeDescriptionDTO;
+import projectManagement.controller.entities.ChangeStatusDTO;
 import projectManagement.controller.entities.CreateItemDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
 import projectManagement.entities.User;
 import projectManagement.repository.ItemRepo;
-
-import java.util.Optional;
 
 import java.util.Optional;
 
@@ -38,7 +38,7 @@ public class ItemService {
         Optional<Item> itemFound = itemRepo.findById(itemId);
 
         if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item you want to delete doesn't exists");
+            return Response.createFailureResponse("the item doesn't exist");
         }
 
         itemRepo.deleteById(itemId);
@@ -49,7 +49,7 @@ public class ItemService {
         Optional<Item> itemFound = itemRepo.findById(itemId);
 
         if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item you want to delete doesn't exists");
+            return Response.createFailureResponse("the item doesn't exist");
         }
         Item item = itemFound.get();
         item.setType("");
@@ -63,10 +63,38 @@ public class ItemService {
     public Response<Item> addType(AddItemType addItemType) {
         Optional<Item> itemFound = itemRepo.findById(addItemType.itemId);
         if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item you want to delete doesn't exists");
+            return Response.createFailureResponse("the item doesn't exist");
         }
         Item item = itemFound.get();
         item.setType(addItemType.type);
+
+        Item savedItem = itemRepo.save(item);
+
+
+        return Response.createSuccessfulResponse(savedItem);
+    }
+
+    public Response<Item> changeStatus(ChangeStatusDTO changeStatusDTO) {
+        Optional<Item> itemFound = itemRepo.findById(changeStatusDTO.itemId);
+        if (!itemFound.isPresent()) {
+            return Response.createFailureResponse("the item doesn't exist");
+        }
+        Item item = itemFound.get();
+        item.setStatus(changeStatusDTO.newStatus);
+
+        Item savedItem = itemRepo.save(item);
+
+
+        return Response.createSuccessfulResponse(savedItem);
+    }
+
+    public Response<Item> changeDescription(ChangeDescriptionDTO changeDescriptionDTO) {
+        Optional<Item> itemFound = itemRepo.findById(changeDescriptionDTO.itemId);
+        if (!itemFound.isPresent()) {
+            return Response.createFailureResponse("the item doesn't exist");
+        }
+        Item item = itemFound.get();
+        item.setDescription(changeDescriptionDTO.description);
 
         Item savedItem = itemRepo.save(item);
 

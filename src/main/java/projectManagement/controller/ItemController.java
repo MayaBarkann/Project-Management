@@ -3,9 +3,7 @@ package projectManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.AddItemType;
-import projectManagement.controller.entities.CreateItemDTO;
-import projectManagement.controller.entities.ItemIdDTO;
+import projectManagement.controller.entities.*;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
@@ -141,5 +139,42 @@ public class ItemController {
 
 
     }
+
+    @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeItemStatus(@RequestBody ChangeStatusDTO changeStatusDTO) {
+
+        if (changeStatusDTO == null || changeStatusDTO.itemId == null || changeStatusDTO.newStatus == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.changeStatus(changeStatusDTO);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/changeDescription", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody ChangeDescriptionDTO changeDescriptionDTO) {
+
+        if (changeDescriptionDTO == null || changeDescriptionDTO.itemId == null || changeDescriptionDTO.description == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.changeDescription(changeDescriptionDTO);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
 
 }
