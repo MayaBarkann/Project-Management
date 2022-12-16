@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,16 +23,12 @@ public class Board {
     @Column(nullable = false)
     private String title;
 
-    @JsonIncludeProperties(value = {"id"})
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", referencedColumnName = "id")
+
+    @ManyToOne()
+    @JoinColumn(nullable = false)
+    @JsonIgnore
     private User admin;
 
-    @ElementCollection(targetClass=String.class)
-    private Set<String> types =new HashSet<>();
-
-    @ElementCollection(targetClass=String.class)
-    private Set<String> statuses =new HashSet<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items;

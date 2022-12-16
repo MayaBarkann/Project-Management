@@ -15,6 +15,8 @@ import java.util.Optional;
 import projectManagement.entities.User;
 import projectManagement.repository.UserRepo;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class UserService {
@@ -27,8 +29,9 @@ public class UserService {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return Response.createFailureResponse("user already exist");
         }
-        return Response.createSuccessfulResponse(userRepo.save(new User(user)));
+        return Response.createSuccessfulResponse(userRepo.save(new User(user.getName(), user.getEmail(), user.getPassword())));
     }
+
     public UserService() {
     }
 
@@ -52,5 +55,9 @@ public class UserService {
         //FIXME: add real database check, and token decoder
         long id = 2L;
         return id;
+    }
+
+    public Optional<User> getUser(long userId) {
+        return userRepo.findById(userId);
     }
 }
