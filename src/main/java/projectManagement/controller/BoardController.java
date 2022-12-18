@@ -20,33 +20,30 @@ import java.util.Optional;
 @RestController
 public class BoardController {
 
-
     @Autowired
     ItemService itemService;
     @Autowired
     BoardService boardService;
-    @Autowired
-    UserService userService;
 
+    /***
+     * This function filters item of the given board by given properties and values.
+     * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
+     * @param boardId - the id of the board we want to perform the filter on
+     * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
+     * @return response entity containing the items that match th filter
+     */
     @GetMapping("/filter")
     public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter){
         Optional<Board> board = boardService.getBoard(boardId);
-//        User creator = null;
-//        User assignedTo = null;
         if(!board.isPresent()){
             return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
         }
-        //todo: check if i need to make sure that this user belongs to the board and that the user exists?
-//        if(filter.getCreatorId() != null){
-//            creator = userService.getUser(filter.getCreatorId()).orElse(null);
-//        }
-//
-//        if(filter.getAssignedToId() != null){
-//            assignedTo = userService.getUser(filter.getAssignedToId()).orElse(null);
-//        }
+
+        if(filter == null){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("null pointer- can not perform filter"));
+        }
 
         //todo: go back and change the response
-//        return ResponseEntity.ok(itemService.filterItems(assignedTo, creator, filter.getDueDate(), filter.getType(), filter.getImportance(), board.get()));
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
 
