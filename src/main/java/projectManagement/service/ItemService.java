@@ -123,5 +123,9 @@ public class ItemService {
 ////        itemRepo.find
 //    }
 
+    public Response<List<Item>> filterItems(Long boardId, FilterItemDTO filter){
+
+    }
+
 
 }

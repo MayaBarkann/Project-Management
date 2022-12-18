@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
@@ -12,6 +13,8 @@ import projectManagement.entities.User;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.utils.Validation;
+
+import java.util.List;
 
 @RequestMapping(value = "/board")
 @RestController
@@ -24,6 +27,9 @@ public class BoardController {
     BoardService boardService;
 
     @GetMapping("/filter")
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter){
+
+    }
 
 
 
