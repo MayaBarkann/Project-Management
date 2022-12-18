@@ -1,5 +1,6 @@
 package projectManagement.entities;
 import org.springframework.data.jpa.domain.Specification;
+import projectManagement.controller.entities.FilterItemDTO;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -17,7 +18,7 @@ import java.util.List;
 //Finally, we use the and method of the CriteriaBuilder object to combine all of the Predicate objects in the list into a single Predicate,
 // which represents the complete filter specification.
 
-public class ItemSpecification implements Specification<Item> {
+public class ItemSpecification implements Specification<FilterItemDTO> {
     private final Item filter;
 
     public ItemSpecification(Item filter) {
@@ -25,15 +26,11 @@ public class ItemSpecification implements Specification<Item> {
     }
 
     @Override
-    public Predicate toPredicate(Root<Item> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(Root<FilterItemDTO> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (filter.getAssignedToUser() != null) {
             predicates.add(criteriaBuilder.equal(root.get("assignedToUser"), filter.getAssignedToUser()));
-        }
-
-        if (filter.getDescription() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("description"), filter.getDescription()));
         }
 
         if (filter.getDueDate() != null) {

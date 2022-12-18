@@ -22,6 +22,13 @@ public class BoardController {
     ItemService itemService;
     @Autowired
     BoardService boardService;
+
+    @GetMapping("/filter")
+
+
+
+
+
 //    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
 //    public ResponseEntity<Response> create(@RequestBody Board board) {
 //        // TODO: we need validation when create a board?

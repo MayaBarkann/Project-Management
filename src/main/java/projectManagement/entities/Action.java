@@ -11,7 +11,8 @@ public enum Action {
     REMOVE_ITEM_TYPE("remove-type"),
     CREATE_BOARD("create-board"),
     UPDATE_ITEM_STATUS("update-item-status"),
-    ADD_COMMENT("add-comment");
+    ADD_COMMENT("add-comment"),
+    FILTER("filter");
 
     private String methodName;
 
