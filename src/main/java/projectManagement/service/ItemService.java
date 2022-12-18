@@ -119,9 +119,10 @@ public class ItemService {
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
-//    public Optional<List<Item>> getAllItems(Long boardId){
-////        itemRepo.find
-//    }
+
+    public Response<List<Item>> getAll() {
+        return Response.createSuccessfulResponse(itemRepo.findAll());
+    }
 
 
 }
