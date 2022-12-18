@@ -1,4 +1,6 @@
 package projectManagement.entities;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.data.jpa.domain.Specification;
 import projectManagement.controller.entities.FilterItemDTO;
 
@@ -6,6 +8,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,36 +20,45 @@ import java.util.List;
 // In this example, we are filtering by the name, description, and price properties of the Item entity.
 //Finally, we use the and method of the CriteriaBuilder object to combine all of the Predicate objects in the list into a single Predicate,
 // which represents the complete filter specification.
+@AllArgsConstructor
+public class ItemSpecification implements Specification<Item> {
+//    private Long assignedToUserId;
+//    private Long creatorId;
+//    private LocalDate dueDate;
+//    private String type;
+//    private ItemImportance importance;
+    FilterItemDTO filter;
+    @NonNull
+    private Long boardId;
 
-public class ItemSpecification implements Specification<FilterItemDTO> {
-    private final Item filter;
-
-    public ItemSpecification(Item filter) {
-        this.filter = filter;
-    }
-
+    //todo: check again about board being null - throw maybe exception?
     @Override
-    public Predicate toPredicate(Root<FilterItemDTO> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(Root<Item> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
-        if (filter.getAssignedToUser() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("assignedToUser"), filter.getAssignedToUser()));
+        if(this.boardId == null){
+            //todo
+        }
+        predicates.add(criteriaBuilder.equal(root.get("board"), this.boardId));
+
+        if (this.filter.getAssignedToId() != null) {
+            predicates.add(criteriaBuilder.equal(root.get("assignedToUser"), this.filter.getAssignedToId()));
         }
 
-        if (filter.getDueDate() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("dueDate"), filter.getDueDate()));
+        if (this.filter.getDueDate() != null) {
+            predicates.add(criteriaBuilder.equal(root.get("dueDate"), this.filter.getDueDate()));
         }
 
-        if (filter.getTitle() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("title"), filter.getTitle()));
+        if (this.filter.getType() != null) {
+            predicates.add(criteriaBuilder.equal(root.get("type"), this.filter.getType()));
         }
 
-        if (filter.getStatus() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("status"), filter.getStatus()));
+        if (this.filter.getCreatorId() != null) {
+            predicates.add(criteriaBuilder.equal(root.get("creator"), this.filter.getCreatorId()));
         }
 
-        if (filter.getImportance() != null) {
-            predicates.add(criteriaBuilder.equal(root.get("importance"), filter.getImportance()));
+        if (this.filter.getImportance() != null) {
+            predicates.add(criteriaBuilder.equal(root.get("importance"), this.filter.getImportance()));
         }
 
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

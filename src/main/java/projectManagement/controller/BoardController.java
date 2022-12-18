@@ -6,15 +6,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.FilterItemDTO;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
+import projectManagement.service.UserService;
 import projectManagement.utils.Validation;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping(value = "/board")
 @RestController
@@ -25,15 +25,30 @@ public class BoardController {
     ItemService itemService;
     @Autowired
     BoardService boardService;
+    @Autowired
+    UserService userService;
 
     @GetMapping("/filter")
     public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter){
+        Optional<Board> board = boardService.getBoard(boardId);
+//        User creator = null;
+//        User assignedTo = null;
+        if(!board.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
+        }
+        //todo: check if i need to make sure that this user belongs to the board and that the user exists?
+//        if(filter.getCreatorId() != null){
+//            creator = userService.getUser(filter.getCreatorId()).orElse(null);
+//        }
+//
+//        if(filter.getAssignedToId() != null){
+//            assignedTo = userService.getUser(filter.getAssignedToId()).orElse(null);
+//        }
 
+        //todo: go back and change the response
+//        return ResponseEntity.ok(itemService.filterItems(assignedTo, creator, filter.getDueDate(), filter.getType(), filter.getImportance(), board.get()));
+        return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
-
-
-
-
 
 //    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
 //    public ResponseEntity<Response> create(@RequestBody Board board) {
