@@ -12,6 +12,7 @@ import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequestMapping("/item")
@@ -189,6 +190,35 @@ public class ItemController {
         User assignedToUser = foundUser.get();
         Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
 
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/getItems", method = RequestMethod.GET)
+    public ResponseEntity<Response<List<Item>>> getItems() {
+
+        Response<List<Item>> response = itemService.getAll();
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+
+    @RequestMapping(value = "/getItem", method = RequestMethod.GET)
+    public ResponseEntity<Response<Item>> getItem() {
+
+        Optional<Item> item = itemService.getItem(22L);
+        Response<Item> response = Response.createSuccessfulResponse(item.get());
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
         } else {

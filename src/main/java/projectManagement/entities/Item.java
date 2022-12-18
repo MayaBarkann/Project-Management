@@ -38,24 +38,29 @@ public class Item {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
     private Set<Item> children;
 
+    @JsonIncludeProperties(value = {"id"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn()
-    @JsonIgnore
+
     private Item parent;
 
+    @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn(nullable = false)
-    @JsonIgnore
+
     private Board board;
 
+    @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn()
-    @JsonIgnore
+
     private User assignedToUser;
+
+    @JsonIncludeProperties(value = {"id" , "name"})
 
     @ManyToOne()
     @JoinColumn(nullable = false)
-    @JsonIgnore
+
     private User creator;
 
     public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
