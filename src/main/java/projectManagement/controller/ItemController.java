@@ -103,7 +103,6 @@ public class ItemController {
 
     }
 
-
     @RequestMapping(value = "/type/remove", method = RequestMethod.PUT)
     public ResponseEntity<Response<Item>> removeItemType(@RequestBody ItemIdDTO updateItemId) {
 
@@ -177,7 +176,7 @@ public class ItemController {
     }
 
     @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody AssignToUserDTO assignToUserDTO) {
+    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
 
         if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
