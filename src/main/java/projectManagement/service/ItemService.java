@@ -9,6 +9,7 @@ import projectManagement.entities.Response;
 import projectManagement.entities.User;
 import projectManagement.repository.ItemRepo;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -99,7 +100,6 @@ public class ItemService {
         return Response.createSuccessfulResponse(savedItem);
     }
 
-
     public Response<Item> changeAssignedToUser(Long itemId, User assignedToUser) {
         Optional<Item> itemFound = itemRepo.findById(itemId);
         if (!itemFound.isPresent()) {
@@ -116,17 +116,12 @@ public class ItemService {
         return Response.createSuccessfulResponse(savedItem);
     }
 
-
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
-
-//    public Response<Item> assignItemToUser(long boardId,long userId,Item item) {
-//        if(boardRepo.findById(boardId).isPresent()){
-//            //TODO: assignItemToUser
-//            return Response.createSuccessfulResponse(item);
-//        }
-//        return Response.createFailureResponse("no board id like that");
+//    public Optional<List<Item>> getAllItems(Long boardId){
+////        itemRepo.find
 //    }
+
 
 }
