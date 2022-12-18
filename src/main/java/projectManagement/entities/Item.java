@@ -56,7 +56,8 @@ public class Item {
 
     private User assignedToUser;
 
-    @JsonIncludeProperties(value = {"id"})
+    @JsonIncludeProperties(value = {"id" , "name"})
+
     @ManyToOne()
     @JoinColumn(nullable = false)
 
