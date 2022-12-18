@@ -43,22 +43,7 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemId);
     }
 
-    public Response<Item> removeType(Long itemId) {
-        Optional<Item> itemFound = itemRepo.findById(itemId);
-
-        if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item doesn't exist");
-        }
-        Item item = itemFound.get();
-        item.setType("");
-
-        Item savedItem = itemRepo.save(item);
-
-
-        return Response.createSuccessfulResponse(savedItem);
-    }
-
-    public Response<Item> addType(AddItemType addItemType) {
+    public Response<Item> changeType(AddItemType addItemType) {
         Optional<Item> itemFound = itemRepo.findById(addItemType.itemId);
         if (!itemFound.isPresent()) {
             return Response.createFailureResponse("the item doesn't exist");

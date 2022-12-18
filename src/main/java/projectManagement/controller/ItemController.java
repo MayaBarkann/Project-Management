@@ -104,32 +104,15 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/type/remove", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> removeItemType(@RequestBody ItemIdDTO updateItemId) {
 
-        if (updateItemId == null || updateItemId.itemId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-        Long itemId = updateItemId.itemId;
-        Response<Item> response = itemService.removeType(itemId);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
-
-    @RequestMapping(value = "/type/add", method = RequestMethod.PUT)
+    @RequestMapping(value = "/changeType", method = RequestMethod.PUT)
     public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
 
         if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
         }
 
-        Response<Item> response = itemService.addType(addItemType);
+        Response<Item> response = itemService.changeType(addItemType);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -212,7 +195,6 @@ public class ItemController {
 
 
     }
-
 
     @RequestMapping(value = "/getItem", method = RequestMethod.GET)
     public ResponseEntity<Response<Item>> getItem() {
