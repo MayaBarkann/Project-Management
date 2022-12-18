@@ -3,8 +3,7 @@ package projectManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.CreateItemDTO;
-import projectManagement.controller.entities.ItemIdDTO;
+import projectManagement.controller.entities.*;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
@@ -104,7 +103,6 @@ public class ItemController {
 
     }
 
-
     @RequestMapping(value = "/type/remove", method = RequestMethod.PUT)
     public ResponseEntity<Response<Item>> removeItemType(@RequestBody ItemIdDTO updateItemId) {
 
@@ -113,6 +111,83 @@ public class ItemController {
         }
         Long itemId = updateItemId.itemId;
         Response<Item> response = itemService.removeType(itemId);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/type/add", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
+
+        if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.addType(addItemType);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeItemStatus(@RequestBody ChangeStatusDTO changeStatusDTO) {
+
+        if (changeStatusDTO == null || changeStatusDTO.itemId == null || changeStatusDTO.newStatus == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.changeStatus(changeStatusDTO);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/changeDescription", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody ChangeDescriptionDTO changeDescriptionDTO) {
+
+        if (changeDescriptionDTO == null || changeDescriptionDTO.itemId == null || changeDescriptionDTO.description == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Item> response = itemService.changeDescription(changeDescriptionDTO);
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
+
+        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
+        if (!foundUser.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
+        }
+        User assignedToUser = foundUser.get();
+        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
