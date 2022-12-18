@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import projectManagement.entities.Response;
 import projectManagement.entities.User;
 import projectManagement.repository.UserRepo;
+import projectManagement.utils.Provider;
 import projectManagement.utils.Validation;
 
 import java.util.Optional;
@@ -60,4 +61,20 @@ public class UserService {
     public Optional<User> getUser(long userId) {
         return userRepo.findById(userId);
     }
+
+    public void registerAfterAuthLoginSuccess(String email, String displayName, Provider provider) {
+        User user = User.createUserGithub(displayName,email,provider);
+        userRepo.save(user);
+    }
+
+    public void updateExistingCustomer(User user, String displayName,Provider provider) {
+        userRepo.delete(user);
+        user.setUserName(displayName);
+        user.setProvider(provider);
+        userRepo.save(user);
+    }
+    public Optional<User> getUserByEmail(String email) {
+        return userRepo.findByEmail(email);
+    }
+
 }
