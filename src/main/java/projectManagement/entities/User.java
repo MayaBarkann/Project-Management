@@ -46,6 +46,9 @@ public class User {
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> ItemsCreated;
 
+    @OneToMany(mappedBy = "commentedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> commentedUsers;
+
     public User(String name, String email, String password) {
         this.name = name;
         this.email = email;

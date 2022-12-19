@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.*;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.AuthService;
@@ -38,7 +35,7 @@ public class ItemController {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Board id could not be null"));
         }
 
-        Optional<Board> optionalBoard = boardService.getBoard(item.boardId);
+        Optional<Board> optionalBoard = boardService.getBoardById(item.boardId);
         if (!optionalBoard.isPresent()) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Board not found"));
         }
@@ -104,32 +101,15 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/type/remove", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> removeItemType(@RequestBody ItemIdDTO updateItemId) {
 
-        if (updateItemId == null || updateItemId.itemId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-        Long itemId = updateItemId.itemId;
-        Response<Item> response = itemService.removeType(itemId);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
-
-    @RequestMapping(value = "/type/add", method = RequestMethod.PUT)
+    @RequestMapping(value = "/changeType", method = RequestMethod.PUT)
     public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
 
         if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
         }
 
-        Response<Item> response = itemService.addType(addItemType);
+        Response<Item> response = itemService.changeType(addItemType);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -199,10 +179,13 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/getItems", method = RequestMethod.GET)
-    public ResponseEntity<Response<List<Item>>> getItems() {
+    @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
+    public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {
+        if (boardId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
 
-        Response<List<Item>> response = itemService.getAll();
+        Response<List<Item>> response = itemService.getBoardItems(boardId);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -213,11 +196,10 @@ public class ItemController {
 
     }
 
+    @RequestMapping(value = "/getItem/{itemId}", method = RequestMethod.GET)
+    public ResponseEntity<Response<Item>> getItem(@PathVariable Long itemId) {
 
-    @RequestMapping(value = "/getItem", method = RequestMethod.GET)
-    public ResponseEntity<Response<Item>> getItem() {
-
-        Optional<Item> item = itemService.getItem(22L);
+        Optional<Item> item = itemService.getItem(itemId);
         Response<Item> response = Response.createSuccessfulResponse(item.get());
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -228,4 +210,50 @@ public class ItemController {
 
     }
 
+    @RequestMapping(value = "/addComment", method = RequestMethod.POST)
+    public ResponseEntity<Response<Comment>> addComment(@RequestBody CommentDTO commentDTO) {
+
+        if (commentDTO == null || commentDTO.userId == null || commentDTO.itemId == null || commentDTO.comment == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+
+        Optional<User> userFound = userService.getUser(commentDTO.userId);
+        if (!userFound.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the commented user could not be found"));
+        }
+        User user = userFound.get();
+
+        Optional<Item> itemFound = itemService.getItem(commentDTO.itemId);
+        if (!itemFound.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the item you want to comment on could not be found"));
+        }
+        Item item = itemFound.get();
+
+        Response<Comment> response = itemService.addComment(item, user, commentDTO.comment);
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
+    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
+
+        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
 }

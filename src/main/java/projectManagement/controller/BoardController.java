@@ -5,23 +5,99 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.controller.entities.CommentDTO;
+import projectManagement.controller.entities.FilterItemDTO;
+import projectManagement.controller.entities.StatusDTO;
+import projectManagement.entities.*;
+import projectManagement.repository.StatusRepo;
+import projectManagement.repository.TypeRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
+import projectManagement.service.UserService;
 import projectManagement.utils.Validation;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @RequestMapping(value = "/board")
 @RestController
 public class BoardController {
 
-
     @Autowired
     ItemService itemService;
     @Autowired
     BoardService boardService;
+
+
+    /***
+     * This function filters item of the given board by given properties and values.
+     * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
+     * @param boardId - the id of the board we want to perform the filter on
+     * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
+     * @return response entity containing the items that match the filter
+     */
+    @GetMapping("/filter")
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter) {
+        Optional<Board> board = boardService.getBoardById(boardId);
+        if (!board.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
+        }
+
+        if (filter == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("null pointer- can not perform filter"));
+        }
+
+        //todo: go back and change the response
+        return ResponseEntity.ok(itemService.filterItems(filter, boardId));
+    }
+
+    @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
+    public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {
+
+        if (statusDTO == null || statusDTO.boardId == null || statusDTO.status == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+
+        Optional<Board> boardFound = boardService.getBoardById(statusDTO.boardId);
+        if (!boardFound.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
+        }
+        Board board = boardFound.get();
+
+        Response<Status> response = boardService.addStatus(board, statusDTO.status);
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/{boardId}", method = RequestMethod.GET)
+    public ResponseEntity<Response<Board>> getItems(@PathVariable Long boardId) {
+        if (boardId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+        Optional<Board> board = boardService.getBoardById(boardId);
+        if (!board.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
+        }
+        Response<Board> response = Response.createSuccessfulResponse(board.get());
+
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
+
 //    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
 //    public ResponseEntity<Response> create(@RequestBody Board board) {
 //        // TODO: we need validation when create a board?

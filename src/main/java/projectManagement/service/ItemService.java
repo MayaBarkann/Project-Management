@@ -3,12 +3,12 @@ package projectManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.*;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
+import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +16,9 @@ import java.util.Optional;
 public class ItemService {
     @Autowired
     ItemRepo itemRepo;
+
+    @Autowired
+    CommentRepo commentRepo;
 
     public ItemService() {
     }
@@ -43,22 +46,7 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemId);
     }
 
-    public Response<Item> removeType(Long itemId) {
-        Optional<Item> itemFound = itemRepo.findById(itemId);
-
-        if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item doesn't exist");
-        }
-        Item item = itemFound.get();
-        item.setType("");
-
-        Item savedItem = itemRepo.save(item);
-
-
-        return Response.createSuccessfulResponse(savedItem);
-    }
-
-    public Response<Item> addType(AddItemType addItemType) {
+    public Response<Item> changeType(AddItemType addItemType) {
         Optional<Item> itemFound = itemRepo.findById(addItemType.itemId);
         if (!itemFound.isPresent()) {
             return Response.createFailureResponse("the item doesn't exist");
@@ -124,5 +112,40 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findAll());
     }
 
+    public Response<List<Item>> getBoardItems(Long boardId) {
+        return Response.createSuccessfulResponse(itemRepo.findByBoardId(boardId));
+    }
 
+
+    /**
+     * This method filters items of the given board by given properties and their values.
+     * It creates ItemSpecification object
+     *
+     * @param filter  - properties and their values we want to filter by
+     * @param boardId
+     * @return Response containing the list of items that match all of the given properties
+     */
+    public Response<List<Item>> filterItems(FilterItemDTO filter, Long boardId) {
+        ItemSpecification specification = new ItemSpecification(filter, boardId);
+        return Response.createSuccessfulResponse(itemRepo.findAll(specification));
+    }
+
+    public Response<Comment> addComment(Item item, User user, String comment) {
+        Comment commentObj = new Comment(comment, user, item, LocalDateTime.now());
+        Comment savedComment = commentRepo.save(commentObj);
+
+
+        return Response.createSuccessfulResponse(savedComment);
+    }
+
+    public Response<Long> deleteComment(Long commentId) {
+        Optional<Comment> commentFound = commentRepo.findById(commentId);
+
+        if (!commentFound.isPresent()) {
+            return Response.createFailureResponse("the comment doesn't exist");
+        }
+
+        commentRepo.deleteById(commentId);
+        return Response.createSuccessfulResponse(commentId);
+    }
 }

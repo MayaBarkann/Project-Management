@@ -2,12 +2,12 @@ package projectManagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
+import projectManagement.repository.StatusRepo;
+import projectManagement.repository.TypeRepo;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -15,14 +15,25 @@ public class BoardService {
 
     @Autowired
     BoardRepo boardRepo;
+    @Autowired
+    StatusRepo statusRepo;
+    @Autowired
+    TypeRepo typeRepo;
 
     public BoardService() {
     }
 
-    public Optional<Board> getBoard(long boardId) {
+    public Optional<Board> getBoardById(long boardId) {
         return boardRepo.findById(boardId);
     }
 
+    public Response<Status> addStatus(Board board, String status) {
+        Status statusObj = new Status(board, status);
+        Status savedStatus = statusRepo.save(statusObj);
+
+
+        return Response.createSuccessfulResponse(savedStatus);
+    }
 
 
 //    public Response<Board> createBoard(Board board){

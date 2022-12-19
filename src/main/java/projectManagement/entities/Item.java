@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class Item {
 
 
     private String type;
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
@@ -60,8 +61,11 @@ public class Item {
 
     @ManyToOne()
     @JoinColumn(nullable = false)
-
     private User creator;
+
+    @JsonIncludeProperties(value = {"id","comment"})
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments;
 
     public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
         this.title = title;
