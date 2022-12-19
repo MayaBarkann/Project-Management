@@ -35,7 +35,7 @@ public class ItemController {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Board id could not be null"));
         }
 
-        Optional<Board> optionalBoard = boardService.getBoard(item.boardId);
+        Optional<Board> optionalBoard = boardService.getBoardById(item.boardId);
         if (!optionalBoard.isPresent()) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Board not found"));
         }
