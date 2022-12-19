@@ -112,6 +112,11 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findAll());
     }
 
+    public Response<List<Item>> getBoardItems(Long boardId) {
+        return Response.createSuccessfulResponse(itemRepo.findByBoardId(boardId));
+    }
+
+
     /**
      * This method filters items of the given board by given properties and their values.
      * It creates ItemSpecification object

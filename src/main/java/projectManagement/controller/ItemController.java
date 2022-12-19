@@ -179,10 +179,13 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/getItems", method = RequestMethod.GET)
-    public ResponseEntity<Response<List<Item>>> getItems() {
+    @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
+    public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {
+        if (boardId == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
 
-        Response<List<Item>> response = itemService.getAll();
+        Response<List<Item>> response = itemService.getBoardItems(boardId);
 
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -193,10 +196,10 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/getItem", method = RequestMethod.GET)
-    public ResponseEntity<Response<Item>> getItem() {
+    @RequestMapping(value = "/getItem/{itemId}", method = RequestMethod.GET)
+    public ResponseEntity<Response<Item>> getItem(@PathVariable Long itemId) {
 
-        Optional<Item> item = itemService.getItem(23L);
+        Optional<Item> item = itemService.getItem(itemId);
         Response<Item> response = Response.createSuccessfulResponse(item.get());
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
