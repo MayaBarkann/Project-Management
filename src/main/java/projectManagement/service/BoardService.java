@@ -5,7 +5,10 @@ import org.springframework.stereotype.Service;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.UserRoleInBoardRepo;
+import projectManagement.repository.StatusRepo;
+import projectManagement.repository.TypeRepo;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -15,9 +18,14 @@ public class BoardService {
     BoardRepo boardRepo;
     @Autowired
     UserRoleInBoardRepo userRoleInBoardRepo;
+    @Autowired
+    StatusRepo statusRepo;
+    @Autowired
+    TypeRepo typeRepo;
 
 
-    public Optional<Board> getBoard(long boardId) {
+
+    public Optional<Board> getBoardById(long boardId) {
         return boardRepo.findById(boardId);
     }
 
@@ -32,17 +40,13 @@ public class BoardService {
         return Response.createSuccessfulResponse(newBoard);
     }
 
+    public Response<Status> addStatus(Board board, String status) {
+        Status statusObj = new Status(board, status);
+        Status savedStatus = statusRepo.save(statusObj);
 
 
-
-
-
-
-
-
-
-
-
+        return Response.createSuccessfulResponse(savedStatus);
+    }
 
 
 
