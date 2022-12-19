@@ -1,7 +1,11 @@
 package projectManagement.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import projectManagement.controller.BoardController;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.UserRoleInBoardRepo;
@@ -14,6 +18,7 @@ import java.util.Optional;
 @Service
 public class BoardService {
 
+    private static Logger logger = LogManager.getLogger(BoardService.class.getName());
     @Autowired
     BoardRepo boardRepo;
     @Autowired
@@ -57,13 +62,23 @@ public class BoardService {
 
     /**
      *
-     * @param board
+     * @param boardId
      * @param type
      * @return
      */
+    public Response<Type> addType(long boardId, String type){
+        if(type == null || type.isEmpty()){
+            logger.error("In BoardService - failed to create new type since it is empty or null");
+            return Response.createFailureResponse("Can not create empty type");
+        }
 
-    public Response<Type> addType(Board board, String type){
-        Type newType = new Type()
+        Optional<Board> board = getBoardById(boardId);
+        if(!board.isPresent()){
+            logger.error("In BoardService - failed to create new type, board does not exist");
+            return Response.createFailureResponse("Can not create new type - board does not exist");
+        }
+
+        return Response.createSuccessfulResponse(typeRepo.save(new Type(board.get(), type)));
     }
 
 

@@ -76,49 +76,48 @@ public class BoardController {
             logger.error("In BoardController - can not create new board since this user does not exist");
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
         }
-        return ResponseEntity.status(201).body(boardService.createBoard(title, admin.get()));
+        return ResponseEntity.ok().body(boardService.createBoard(title, admin.get()));
     }
 
     @PostMapping("/add-type")
-    public ResponseEntity<Response<Type>> addType(@RequestParam long boardId, @RequestBody String status){
-        if (status == null || status.isEmpty()){
-            logger.error("In BoardController - failed to create new status since it is empty or null");
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create empty status"));
-        }
+    public ResponseEntity<Response<Type>> addType(@RequestParam long boardId, @RequestBody String type){
+        Response response = boardService.addType(boardId, type);
 
-        Optional<Board> board = boardService.getBoardById(boardId);
-        if(!board.isPresent()){
-            logger.error("In BoardController - failed to create new status since it is empty or null");
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create status - board does not exist"));
-        }
-
-    }
-
-
-
-    @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
-    public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {
-
-        if (statusDTO == null || statusDTO.boardId == null || statusDTO.status == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-
-        Optional<Board> boardFound = boardService.getBoardById(statusDTO.boardId);
-        if (!boardFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
-        }
-        Board board = boardFound.get();
-
-        Response<Status> response = boardService.addStatus(board, statusDTO.status);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
+        if(!response.isSucceed()){
             return ResponseEntity.badRequest().body(response);
         }
 
+        return ResponseEntity.ok().body(response);
 
     }
+
+
+
+
+
+//    @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
+//    public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {
+//
+//        if (statusDTO == null || statusDTO.boardId == null || statusDTO.status == null) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+//        }
+//
+//
+//        Optional<Board> boardFound = boardService.getBoardById(statusDTO.boardId);
+//        if (!boardFound.isPresent()) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
+//        }
+//        Board board = boardFound.get();
+//
+//        Response<Status> response = boardService.addStatus(board, statusDTO.status);
+//        if (response.isSucceed()) {
+//            return ResponseEntity.ok().body(response);
+//        } else {
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//
+//
+//    }
 
     @RequestMapping(value = "/{boardId}", method = RequestMethod.GET)
     public ResponseEntity<Response<Board>> getItems(@PathVariable Long boardId) {
