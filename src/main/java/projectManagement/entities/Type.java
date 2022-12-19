@@ -25,5 +25,10 @@ public class Type {
     @JoinColumn(nullable = false)
     private Board board;
 
+    public Type(Board board, String type) {
+        this.type = type;
+        this.board = board;
+    }
+
 
 }

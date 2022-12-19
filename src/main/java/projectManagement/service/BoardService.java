@@ -63,7 +63,7 @@ public class BoardService {
      */
 
     public Response<Type> addType(Board board, String type){
-        
+        Type newType = new Type()
     }
 
 
