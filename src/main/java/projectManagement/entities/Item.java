@@ -63,6 +63,7 @@ public class Item {
     @JoinColumn(nullable = false)
     private User creator;
 
+    @JsonIncludeProperties(value = {"id","comment"})
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
 
