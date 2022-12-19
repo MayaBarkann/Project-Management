@@ -3,12 +3,10 @@ package projectManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.*;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.repository.ItemRepo;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,6 +105,18 @@ public class ItemService {
 
     public Response<List<Item>> getAll() {
         return Response.createSuccessfulResponse(itemRepo.findAll());
+    }
+
+    /**
+     * This method filters items of the given board by given properties and their values.
+     * It creates ItemSpecification object
+     * @param filter - properties and their values we want to filter by
+     * @param boardId
+     * @return Response containing the list of items that match all of the given properties
+     */
+    public Response<List<Item>> filterItems(FilterItemDTO filter, Long boardId){
+        ItemSpecification specification = new ItemSpecification(filter, boardId);
+        return Response.createSuccessfulResponse(itemRepo.findAll(specification));
     }
 
 
