@@ -30,7 +30,7 @@ public class BoardController {
      * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
      * @param boardId - the id of the board we want to perform the filter on
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
-     * @return response entity containing the items that match th filter
+     * @return response entity containing the items that match the filter
      */
     @GetMapping("/filter")
     public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter){
