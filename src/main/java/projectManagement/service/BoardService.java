@@ -2,11 +2,9 @@ package projectManagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
+import projectManagement.repository.UserRoleInBoardRepo;
 
 import java.util.Optional;
 
@@ -15,21 +13,37 @@ public class BoardService {
 
     @Autowired
     BoardRepo boardRepo;
+    @Autowired
+    UserRoleInBoardRepo userRoleInBoardRepo;
 
-    public BoardService() {
-    }
 
     public Optional<Board> getBoard(long boardId) {
         return boardRepo.findById(boardId);
     }
 
+    public Response<Board> create(String title, User admin){
+        Board newBoard = boardRepo.save(new Board(title, admin));
+        UserRoleInBoard userInBoard = new UserRoleInBoard();
+        userInBoard.setId(new UserBoardPk());
+        userInBoard.setBoard(newBoard);
+        userInBoard.setUser(admin);
+        userInBoard.setUserRole(UserRole.ADMIN);
+        userRoleInBoardRepo.save(userInBoard);
+        return Response.createSuccessfulResponse(newBoard);
+    }
 
 
-//    public Response<Board> createBoard(Board board){
-//        //TODO: add item to board
-//        return Response.createSuccessfulResponse(boardRepo.save(board));
-////        return Response.createFailureResponse("no board id like that");
-//    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 //    public Response<Board> delete(long boardId){

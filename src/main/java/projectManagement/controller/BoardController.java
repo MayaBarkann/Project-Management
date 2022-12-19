@@ -1,5 +1,7 @@
 package projectManagement.controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +21,13 @@ import java.util.Optional;
 @RequestMapping(value = "/board")
 @RestController
 public class BoardController {
-
+    private static Logger logger = LogManager.getLogger(BoardController.class.getName());
     @Autowired
     ItemService itemService;
     @Autowired
     BoardService boardService;
+    @Autowired
+    UserService userService;
 
     /***
      * This function filters item of the given board by given properties and values.
@@ -32,19 +36,30 @@ public class BoardController {
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
      * @return response entity containing the items that match the filter
      */
+    //todo: change boardId to requestAttribute
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter){
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam long boardId, @RequestBody FilterItemDTO filter){
         Optional<Board> board = boardService.getBoard(boardId);
         if(!board.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board does not exist"));
         }
 
         if(filter == null){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("null pointer- can not perform filter"));
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Null pointer- can not perform filter"));
         }
 
         //todo: go back and change the response
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
+    }
+
+    //todo: change userId to requestAttribute
+    @PostMapping("/create-board")
+    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestParam String title){
+        Optional<User> admin = userService.getUser(userId);
+        if (!admin.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
+        }
+        return ResponseEntity.status(201).body(boardService.create(title, admin.get()));
     }
 
 //    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
