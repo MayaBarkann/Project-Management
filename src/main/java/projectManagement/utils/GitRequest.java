@@ -16,8 +16,6 @@ public class GitRequest {
 
     // refactoring to generic function ???
     public static ResponseEntity<GitToken> reqGitGetToken(String link) {
-
-
         ResponseEntity<GitToken> response = null;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -38,7 +36,6 @@ public class GitRequest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + bearerToken);
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
-
         try {
             GitUser gitUser = restTemplate.exchange(link, HttpMethod.GET, entity, GitUser.class).getBody();
             gitUser.accessToken=bearerToken;
