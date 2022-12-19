@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.*;
-import projectManagement.entities.Board;
-import projectManagement.entities.Item;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
+import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
@@ -199,7 +196,7 @@ public class ItemController {
     @RequestMapping(value = "/getItem", method = RequestMethod.GET)
     public ResponseEntity<Response<Item>> getItem() {
 
-        Optional<Item> item = itemService.getItem(22L);
+        Optional<Item> item = itemService.getItem(23L);
         Response<Item> response = Response.createSuccessfulResponse(item.get());
         if (response.isSucceed()) {
             return ResponseEntity.ok().body(response);
@@ -209,5 +206,36 @@ public class ItemController {
 
 
     }
+
+    @RequestMapping(value = "/addComment", method = RequestMethod.POST)
+    public ResponseEntity<Response<Comment>> addComment(@RequestBody CommentDTO commentDTO) {
+
+        if (commentDTO == null || commentDTO.userId == null || commentDTO.itemId == null || commentDTO.comment == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        }
+
+
+        Optional<User> userFound = userService.getUser(commentDTO.userId);
+        if (!userFound.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the commented user could not be found"));
+        }
+        User user = userFound.get();
+
+        Optional<Item> itemFound = itemService.getItem(commentDTO.itemId);
+        if (!itemFound.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("the item you want to comment on could not be found"));
+        }
+        Item item = itemFound.get();
+
+        Response<Comment> response = itemService.addComment(item, user, commentDTO.comment);
+        if (response.isSucceed()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+
+    }
+
 
 }

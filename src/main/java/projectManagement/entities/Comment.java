@@ -1,10 +1,14 @@
 package projectManagement.entities;
 
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 public class Comment {
 
@@ -32,5 +36,13 @@ public class Comment {
     private LocalDateTime dueDate;
 
     public Comment() {
+    }
+
+    public Comment( String comment, User commentedUser, Item item, LocalDateTime dueDate) {
+
+        this.comment = comment;
+        this.commentedUser = commentedUser;
+        this.item = item;
+        this.dueDate = dueDate;
     }
 }

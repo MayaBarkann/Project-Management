@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.*;
 import projectManagement.entities.*;
+import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +16,9 @@ import java.util.Optional;
 public class ItemService {
     @Autowired
     ItemRepo itemRepo;
+
+    @Autowired
+    CommentRepo commentRepo;
 
     public ItemService() {
     }
@@ -110,14 +115,22 @@ public class ItemService {
     /**
      * This method filters items of the given board by given properties and their values.
      * It creates ItemSpecification object
-     * @param filter - properties and their values we want to filter by
+     *
+     * @param filter  - properties and their values we want to filter by
      * @param boardId
      * @return Response containing the list of items that match all of the given properties
      */
-    public Response<List<Item>> filterItems(FilterItemDTO filter, Long boardId){
+    public Response<List<Item>> filterItems(FilterItemDTO filter, Long boardId) {
         ItemSpecification specification = new ItemSpecification(filter, boardId);
         return Response.createSuccessfulResponse(itemRepo.findAll(specification));
     }
 
+    public Response<Comment> addComment(Item item, User user, String comment) {
+        Comment commentObj = new Comment(comment, user, item, LocalDateTime.now());
+        Comment savedComment = commentRepo.save(commentObj);
+
+
+        return Response.createSuccessfulResponse(savedComment);
+    }
 
 }
