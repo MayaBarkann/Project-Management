@@ -25,18 +25,23 @@ public class Board {
 
     @Column(nullable = false)
     private String title;
-    
+
     @ManyToOne()
     @JoinColumn(nullable = false)
     @JsonIgnore
     private User admin;
 
-    private HashSet<String> types;
-
-    private HashSet<String> statuses;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items;
+
+    @JsonIncludeProperties(value = {"id", "status"})
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Status> statuses;
+
+    @JsonIncludeProperties(value = {"id", "type"})
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Type> types;
 
     public Board(String title, User admin) {
         this.title = title;
