@@ -30,7 +30,6 @@ public class TokenFilter extends GenericFilterBean{
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        System.out.println("in Token filter");
         String url = ((HttpServletRequest) request).getRequestURL().toString();
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
@@ -49,10 +48,6 @@ public class TokenFilter extends GenericFilterBean{
                     System.out.println(token);
                     Long userId = userService.checkTokenToUserInDB(token);
                     request.setAttribute("userId", userId);
-                    System.out.println("token is:" +userId);
-                    System.out.println("token is:" +userId);
-                    System.out.println("token is:" +userId);
-
                 } catch (AccountNotFoundException e) {
 //                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
                     //Servers send 404 instead of 403 Forbidden to hide the existence

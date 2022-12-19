@@ -30,11 +30,13 @@ public class AuthController {
     @Autowired
     AuthService authService;
 
+    /**
+     * Register controller
+     * @param user - mail,password,name
+     * @return l
+     */
     @RequestMapping(value = "register", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserDTO>> register(@RequestBody UserRequest user) {
-        System.out.println(user.getEmail());
-        System.out.println(user.getName());
-        System.out.println(user.getPassword());
         if(Validation.validateInputRegister(user)) {
             Response<UserDTO> response = authService.register(user);
             if (response.isSucceed()) {
@@ -44,6 +46,11 @@ public class AuthController {
         return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * login controller
+     * @param user -
+     * @return -
+     */
     @RequestMapping(value = "login", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserLoginDTO>> login(@RequestBody UserRequest user) {
         if(Validation.validateInputLogin(user)) {
@@ -55,7 +62,11 @@ public class AuthController {
         return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
     }
 
-
+    /**
+     * Github register
+     * @param code - after authorize we get a code as a param
+     * @return -
+     */
     @RequestMapping(method = RequestMethod.POST, path = "/loginGithub")
     public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code){
         Response<UserLoginDTO> response = authService.loginGithub(code);

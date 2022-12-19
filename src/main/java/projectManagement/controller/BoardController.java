@@ -13,7 +13,6 @@ import projectManagement.repository.StatusRepo;
 import projectManagement.repository.TypeRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
-import projectManagement.service.UserService;
 import projectManagement.utils.Validation;
 
 import java.time.LocalDate;
