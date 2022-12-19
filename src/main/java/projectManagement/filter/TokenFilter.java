@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import projectManagement.service.UserService;
+import projectManagement.service.AuthService;
 
 @Component
 @Order(0)
 public class TokenFilter extends GenericFilterBean{
     @Autowired
-    UserService userService;
+    AuthService userService;
     /**
      * this doFilter function is set to check if the user has the permission to enter the app controllers.
      * checks if the request was according to what we need with token in the authorization Header.

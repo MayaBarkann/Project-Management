@@ -51,13 +51,16 @@ public class User {
         this.email = email;
         this.password = password;
     }
-    public static User createUserGithub(String name, String email, Provider provider) {
-        User user = new User();
+    public static User CreateUser(String name, String email, String password,Provider provider) {
+        User user= new User();
         user.name = name;
         user.email = email;
+        user.password = password;
         user.provider = provider;
         return user;
     }
+
+
     public void setPassword(String password) {
         this.password = password;
     }

@@ -1,5 +1,6 @@
 package projectManagement.utils;
 
+import projectManagement.controller.entities.UserRequest;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
 import projectManagement.entities.User;
@@ -19,12 +20,11 @@ public class Validation {
      * @param user - a user who trying register to the app.
      * @return - true if one of the parameters is wrong
      */
-    public static boolean validateInputRegister(User user) {
+    public static boolean validateInputRegister(UserRequest user) {
         return  validate(Regex.EMAIL.getRegex(), user.getEmail()) &&
-                validate(Regex.NAME.getRegex(), user.getName()) &&
                 validate(Regex.PASSWORD.getRegex(), user.getPassword());
     }
-    public static boolean validateInputLogin(User user) {
+    public static boolean validateInputLogin(UserRequest user) {
         return  validate(Regex.EMAIL.getRegex(), user.getEmail()) &&
                 validate(Regex.PASSWORD.getRegex(), user.getPassword());
     }
