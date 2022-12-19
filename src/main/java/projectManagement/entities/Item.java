@@ -60,8 +60,10 @@ public class Item {
 
     @ManyToOne()
     @JoinColumn(nullable = false)
-
     private User creator;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments;
 
     public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
         this.title = title;
