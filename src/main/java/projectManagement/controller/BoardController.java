@@ -18,6 +18,7 @@ import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
 import projectManagement.utils.Validation;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -43,29 +44,57 @@ public class BoardController {
      */
     //todo: change boardId to requestAttribute
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter) {
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam long boardId, @RequestBody FilterItemDTO filter) {
         Optional<Board> board = boardService.getBoardById(boardId);
+        logger.info("In BoardController - trying to filter items by properties");
         if (!board.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
+            logger.error("In BoardController - can not perform the filter since the board does not exist");
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board does not exist"));
         }
 
         if (filter == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("null pointer- can not perform filter"));
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Null pointer- can not perform filter"));
         }
 
         //todo: go back and change the response
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
 
+    /**
+     * This function creates a new board with the given user as the admin.
+     * @param userId the admin of the new board
+     * @param title the title of the new board
+     * @return Response entity with successful response containing the new created board if the given user exists,
+     * otherwise returns bad request with the reason.
+     */
     //todo: change userId to requestAttribute
     @PostMapping("/create-board")
-    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestParam String title){
+    public ResponseEntity<Response<Board>> createBoard(@RequestAttribute long userId, @RequestBody String title){
         Optional<User> admin = userService.getUser(userId);
+        logger.info("In BoardController - creating new board");
         if (!admin.isPresent()){
+            logger.error("In BoardController - can not create new board since this user does not exist");
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
         }
-        return ResponseEntity.status(201).body(boardService.create(title, admin.get()));
+        return ResponseEntity.status(201).body(boardService.createBoard(title, admin.get()));
     }
+
+    @PostMapping("/add-type")
+    public ResponseEntity<Response<Type>> addType(@RequestParam long boardId, @RequestBody String status){
+        if (status == null || status.isEmpty()){
+            logger.error("In BoardController - failed to create new status since it is empty or null");
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create empty status"));
+        }
+
+        Optional<Board> board = boardService.getBoardById(boardId);
+        if(!board.isPresent()){
+            logger.error("In BoardController - failed to create new status since it is empty or null");
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create status - board does not exist"));
+        }
+
+    }
+
+
 
     @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
     public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {

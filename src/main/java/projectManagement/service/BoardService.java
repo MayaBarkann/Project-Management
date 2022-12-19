@@ -29,7 +29,14 @@ public class BoardService {
         return boardRepo.findById(boardId);
     }
 
-    public Response<Board> create(String title, User admin){
+    /**
+     * This function creates a new board with title and assigning the user to be the admin of this new board.
+     * It saves the new board in BoardRepo and saving the given user with role Admin and the new board created in UserRoleInBoardRepo
+     * @param title the title of the created board
+     * @param admin the admin of the created board
+     * @return the new created board
+     */
+    public Response<Board> createBoard(String title, User admin){
         Board newBoard = boardRepo.save(new Board(title, admin));
         UserRoleInBoard userInBoard = new UserRoleInBoard();
         userInBoard.setId(new UserBoardPk());
@@ -37,6 +44,7 @@ public class BoardService {
         userInBoard.setUser(admin);
         userInBoard.setUserRole(UserRole.ADMIN);
         userRoleInBoardRepo.save(userInBoard);
+
         return Response.createSuccessfulResponse(newBoard);
     }
 
@@ -44,8 +52,18 @@ public class BoardService {
         Status statusObj = new Status(board, status);
         Status savedStatus = statusRepo.save(statusObj);
 
-
         return Response.createSuccessfulResponse(savedStatus);
+    }
+
+    /**
+     *
+     * @param board
+     * @param type
+     * @return
+     */
+
+    public Response<Type> addType(Board board, String type){
+        
     }
 
 
