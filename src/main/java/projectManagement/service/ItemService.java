@@ -133,4 +133,14 @@ public class ItemService {
         return Response.createSuccessfulResponse(savedComment);
     }
 
+    public Response<Long> deleteComment(Long commentId) {
+        Optional<Comment> commentFound = commentRepo.findById(commentId);
+
+        if (!commentFound.isPresent()) {
+            return Response.createFailureResponse("the comment doesn't exist");
+        }
+
+        commentRepo.deleteById(commentId);
+        return Response.createSuccessfulResponse(commentId);
+    }
 }
