@@ -33,9 +33,7 @@ public class TokenFilter extends GenericFilterBean{
         String url = ((HttpServletRequest) request).getRequestURL().toString();
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-
         if (!url.contains("auth") && !url.contains("ws") && !url.contains("error") && !httpRequest.getMethod().equals(HttpMethod.OPTIONS.toString())) {
-
             if (httpRequest.getHeader("authorization") != null) {
                 String token = httpRequest.getHeader("authorization");
                 if (token == null) {
@@ -45,8 +43,7 @@ public class TokenFilter extends GenericFilterBean{
                     return;
                 }
                 try {
-                    System.out.println(token);
-                    Long userId = userService.checkTokenToUserInDB(token);
+                    Long userId = userService.checkTokenToUserInDB(token.substring(7));
                     request.setAttribute("userId", userId);
                 } catch (AccountNotFoundException e) {
 //                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
