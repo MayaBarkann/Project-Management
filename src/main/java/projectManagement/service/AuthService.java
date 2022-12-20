@@ -2,6 +2,7 @@ package projectManagement.service;
 
 import javax.security.auth.login.AccountNotFoundException;
 
+import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -13,8 +14,10 @@ import projectManagement.entities.User;
 import projectManagement.repository.UserRepo;
 import projectManagement.utils.GitRequest;
 import projectManagement.utils.Provider;
+import projectManagement.utils.Token;
 
 import java.sql.SQLDataException;
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -54,14 +57,23 @@ public class AuthService {
                 return Response.createFailureResponse("password do not match");
             }
         }
-        // TODO: CREATE generateToken
-        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(),"token"));
+        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(),generateToken(optUser.get().getId())));
     }
 
+    /**
+     * called from token filter to check if the id of the user is valid.
+     * @param token -
+     * @return -
+     * @throws AccountNotFoundException
+     */
     public Long checkTokenToUserInDB(String token) throws AccountNotFoundException {
-        //FIXME: add real database check, and token decoder
-        long id = 2L;
-        return id;
+        Claims claims = Token.decodeJWT(token);
+        long userId = Long.parseLong(claims.getId());
+        Optional<User> user = getUser(userId);
+        if(! user.isPresent()){
+            throw new AccountNotFoundException("no id in DB");
+        }
+        return userId;
     }
 
     public Optional<User> getUser(long userId) {
@@ -129,6 +141,16 @@ public class AuthService {
             throw new SQLDataException(String.format("Email %s already exists!", user.getEmail()));
         }
         return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(),user.getPassword(),provider)));
+    }
+
+    /**
+     * generateToken is a function that creates a unique JWT token for every logged-in user.
+     *
+     * @param userid - userid
+     * @return generated token according to: io.jsonwebtoken.Jwts library
+     */
+    private String generateToken(long userid) {
+        return Token.createJWT(String.valueOf(userid), "Project Management", "login",  Instant.now().toEpochMilli());
     }
 
 }
