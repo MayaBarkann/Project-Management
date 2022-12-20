@@ -2,6 +2,7 @@ package projectManagement.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,9 @@ import projectManagement.entities.User;
 import projectManagement.service.AuthService;
 import projectManagement.utils.Validation;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 
 @RequestMapping(value = "/auth")
@@ -67,10 +71,12 @@ public class AuthController {
      * @param code - after authorize we get a code as a param
      * @return -
      */
-    @RequestMapping(method = RequestMethod.POST, path = "/loginGithub")
+    @RequestMapping(method = RequestMethod.GET, path = "/loginGithub")
     public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code){
         Response<UserLoginDTO> response = authService.loginGithub(code);
-        return ResponseEntity.ok().body(response);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("http://localhost:3000"));
+        System.out.println("good luck");
+        return new ResponseEntity<Response<UserLoginDTO>>(response,headers,HttpStatus.MOVED_PERMANENTLY);
     }
-
 }
