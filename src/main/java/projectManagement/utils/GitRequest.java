@@ -14,7 +14,12 @@ import java.util.List;
 public class GitRequest {
 
 
-    // refactoring to generic function ???
+    /**
+     * send restTemplate.exchange to get the info for our GitToken.class entity.
+     *
+     * @param link - where to send the request
+     * @return GitToken - access_token; token_type; scope
+     */
     public static ResponseEntity<GitToken> reqGitGetToken(String link) {
         ResponseEntity<GitToken> response = null;
         RestTemplate restTemplate = new RestTemplate();
@@ -29,8 +34,16 @@ public class GitRequest {
         }
     }
 
+    /**
+     * send restTemplate.exchange to get the info for our GitUser.class entity.
+     * if the mail of the user is private, sends another request with <a href="https://api.github.com/user/emails"></a>
+     * add the /emails to get the email of the user who just did an authorization via gitHub.
+     *
+     * @param link        - where to send the request
+     * @param bearerToken - put the access_token from reqGitGetToken in the header authorization
+     * @return GitUser - login; name; email;
+     */
     public static ResponseEntity<GitUser> reqGitGetUser(String link, String bearerToken) {
-
         ResponseEntity<GitUser> response = null;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -38,11 +51,11 @@ public class GitRequest {
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         try {
             GitUser gitUser = restTemplate.exchange(link, HttpMethod.GET, entity, GitUser.class).getBody();
-            gitUser.accessToken=bearerToken;
-            if(gitUser.getEmail()==null){
-                GithubEmail[] githubEmail = restTemplate.exchange(link+"/emails", HttpMethod.GET, entity, GithubEmail[].class).getBody();
-                for (GithubEmail gEmail: githubEmail) {
-                    if(gEmail.isPrimary()){
+            gitUser.accessToken = bearerToken;
+            if (gitUser.getEmail() == null) {
+                GithubEmail[] githubEmail = restTemplate.exchange(link + "/emails", HttpMethod.GET, entity, GithubEmail[].class).getBody();
+                for (GithubEmail gEmail : githubEmail) {
+                    if (gEmail.isPrimary()) {
                         gitUser.email = gEmail.getEmail();
                         break;
                     }

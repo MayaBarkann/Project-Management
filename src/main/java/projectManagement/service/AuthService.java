@@ -29,12 +29,20 @@ public class AuthService {
     @Autowired
     private Environment env;
 
+    /**
+     * register service, register was made from client.
+     * check if we have the user id DB, return error if yes.
+     * then go to createUser(user, Provider.LOCAL)
+     *
+     * @param user - UserRequest with email, name, password.
+     * @return Response with UserDTO - email, password, name.
+     */
     public Response<UserDTO> register(UserRequest user) {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return Response.createFailureResponse("user already exist");
         }
-        try{
-            return Response.createSuccessfulResponse(createUser(user,Provider.LOCAL));
+        try {
+            return Response.createSuccessfulResponse(createUser(user, Provider.LOCAL));
         } catch (Exception e) {
             return Response.createFailureResponse("Failed during creation");
         }
@@ -47,35 +55,50 @@ public class AuthService {
         userRepo.save(user);
     }
 
+    /**
+     * login service, check if we have the user id DB,
+     * if the provider is local check for password matching.
+     *
+     * @param user - UserRequest with email, name, password
+     * @return Response with UserLoginDTO - userId and token.
+     */
     public Response<UserLoginDTO> login(UserRequest user) {
         Optional<User> optUser = userRepo.findByEmail(user.getEmail());
         if (!optUser.isPresent()) {
             return Response.createFailureResponse("user already exist");
         }
-        if(optUser.get().getProvider()== Provider.LOCAL) {
+        if (optUser.get().getProvider() == Provider.LOCAL) {
             if (!optUser.get().getPassword().equals(user.getPassword())) {
                 return Response.createFailureResponse("password do not match");
             }
         }
-        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(),generateToken(optUser.get().getId())));
+        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(), generateToken(optUser.get().getId())));
     }
 
     /**
      * called from token filter to check if the id of the user is valid.
+     * decode the token to get id from token, then check if exist in DB.
+     *
      * @param token -
-     * @return -
-     * @throws AccountNotFoundException
+     * @return - long userId
+     * @throws AccountNotFoundException - throw not found an account with this id.
      */
     public Long checkTokenToUserInDB(String token) throws AccountNotFoundException {
         Claims claims = Token.decodeJWT(token);
         long userId = Long.parseLong(claims.getId());
         Optional<User> user = getUser(userId);
-        if(! user.isPresent()){
+        if (!user.isPresent()) {
             throw new AccountNotFoundException("no id in DB");
         }
         return userId;
     }
 
+    /**
+     * getUser from DB
+     *
+     * @param userId -
+     * @return - Optional<User>.
+     */
     public Optional<User> getUser(long userId) {
         return userRepo.findById(userId);
     }
@@ -84,8 +107,14 @@ public class AuthService {
         return userRepo.findByEmail(email);
     }
 
-
-
+    /**
+     * after user authenticate with gitHub, he gets a code as a parameter.
+     * we send the parameter from the client to the controller to here.
+     * then we need to take 3 actions with this code to get the user email and name.
+     *
+     * @param code - unique code valid for 5 minutes
+     * @return - Response with UserLoginDTO - new userId and token.
+     */
     public Response<UserLoginDTO> loginGithub(String code) {
         GitUser githubUser = getGithubUser(code);
         try {
@@ -98,9 +127,8 @@ public class AuthService {
                             UserDTO userCreated = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
                         }
                     }
-                    // if user with email created and has password ??
                     return login(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken()));
-                }else{
+                } else {
 
                 }
             }
@@ -110,6 +138,14 @@ public class AuthService {
         }
     }
 
+    /**
+     * First request to gitHub authorization process
+     * we need to get the token authorization from <a href="https://github.com/login/oauth/access_token"></a>
+     * with our env.getProperty - github.client-id, github.client-secret.
+     *
+     * @param code - the parameter after authorization from client.
+     * @return
+     */
     public ResponseEntity<GitToken> getGithubToken(String code) {
         String baseLink = "https://github.com/login/oauth/access_token?";
         String clientId = env.getProperty("spring.security.oauth2.client.registration.github.client-id");
@@ -118,39 +154,50 @@ public class AuthService {
         return GitRequest.reqGitGetToken(linkGetToken);
     }
 
-    public GitUser getGithubUser( String code ) {
+    /**
+     * the second call, we get the user info.
+     * from <a href="https://api.github.com/user"></a>
+     *
+     * @param code - code as a parameter, to get the token.
+     * @return GitUser login; name; email; accessToken;
+     */
+    public GitUser getGithubUser(String code) {
         ResponseEntity<GitToken> gitTokenResponse = getGithubToken(code);
-
         if (gitTokenResponse != null) {
-            String token = gitTokenResponse.getBody().getAccess_token();
-
-            String linkGetUser = "https://api.github.com/user";
-            return GitRequest.reqGitGetUser(linkGetUser, token).getBody();
+            try {
+                String token = gitTokenResponse.getBody().getAccess_token();
+                String linkGetUser = "https://api.github.com/user";
+                return GitRequest.reqGitGetUser(linkGetUser, token).getBody();
+            } catch (NullPointerException e) {
+                return null;
+            }
         }
         return null;
     }
 
-
     /**
      * Create user if email isn't already exist
-     * @param user
-     * @return the created User
+     *
+     * @param user     -
+     * @param provider -
+     * @return -
+     * @throws SQLDataException -
      */
     public UserDTO createUser(UserRequest user, Provider provider) throws SQLDataException {
-        if(userRepo.findByEmail(user.getEmail()).isPresent()){
+        if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             throw new SQLDataException(String.format("Email %s already exists!", user.getEmail()));
         }
-        return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(),user.getPassword(),provider)));
+        return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), user.getPassword(), provider)));
     }
 
     /**
-     * generateToken is a function that creates a unique JWT token for every logged-in user.
+     * generateToken is a function that creates a unique JWT token for every new logged-in user.
      *
      * @param userid - userid
      * @return generated token according to: io.jsonwebtoken.Jwts library
      */
     private String generateToken(long userid) {
-        return Token.createJWT(String.valueOf(userid), "Project Management", "login",  Instant.now().toEpochMilli());
+        return Token.createJWT(String.valueOf(userid), "Project Management", "login", Instant.now().toEpochMilli());
     }
 
 }
