@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -34,6 +35,19 @@ public class Type {
         this.board = board;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Type type1 = (Type) o;
+        return id == type1.id &&
+                Objects.equals(type, type1.type) &&
+                Objects.equals(board, type1.board) &&
+                Objects.equals(items, type1.items);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, board, items);
+    }
 }

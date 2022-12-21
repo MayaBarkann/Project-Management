@@ -24,21 +24,6 @@ public class ItemService {
     StatusRepo statusRepo;
 
 
-    public ItemService() {
-    }
-
-//    public Response<Item> createItem(CreateItemDTO item, User creator, Board board, User assignedToUser, Item parentItem) {
-//
-//        Item newItem = new Item(item.title, item.status, item.importance, item.type, parentItem, board, creator, assignedToUser);
-//        Item savedItem = itemRepo.save(newItem);
-//        if (savedItem == null) {
-//            Response.createFailureResponse("can't crate a new item");
-//        }
-//        return Response.createSuccessfulResponse(savedItem);
-//
-//
-//    }
-
     public Response<Item> createItem(String title, long statusId, User creator, Board board){
         Optional<Status> status = statusRepo.findById(statusId);
 
@@ -65,47 +50,46 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemId);
     }
 
-//    public Response<Item> changeType(AddItemType addItemType) {
-//        Optional<Item> itemFound = itemRepo.findById(addItemType.itemId);
-//        if (!itemFound.isPresent()) {
-//            return Response.createFailureResponse("the item doesn't exist");
-//        }
-//        Item item = itemFound.get();
-//        item.setType(addItemType.type);
-//
-//        Item savedItem = itemRepo.save(item);
-//
-//
-//        return Response.createSuccessfulResponse(savedItem);
-//    }
-
-//    public Response<Item> changeStatus(ChangeStatusDTO changeStatusDTO) {
-//        Optional<Item> itemFound = itemRepo.findById(changeStatusDTO.itemId);
-//        if (!itemFound.isPresent()) {
-//            return Response.createFailureResponse("the item doesn't exist");
-//        }
-//        Item item = itemFound.get();
-//        item.setStatus(changeStatusDTO.newStatus);
-//
-//        Item savedItem = itemRepo.save(item);
-//
-//
-//        return Response.createSuccessfulResponse(savedItem);
-//    }
-
-    public Response<Item> changeDescription(ChangeDescriptionDTO changeDescriptionDTO) {
-        Optional<Item> itemFound = itemRepo.findById(changeDescriptionDTO.itemId);
-        if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item doesn't exist");
+    public Response<Item> changeType(long itemId, Type type) {
+        Optional<Item> optItem = itemRepo.findById(itemId);
+        if(!optItem.isPresent()){
+            return Response.createFailureResponse("Item does not exist");
         }
-        Item item = itemFound.get();
-        item.setDescription(changeDescriptionDTO.description);
+        Item item = optItem.get();
+        item.setType(type);
+        itemRepo.save(item);
 
-        Item savedItem = itemRepo.save(item);
+        //todo: add live update
+        return Response.createSuccessfulResponse(item);
 
-
-        return Response.createSuccessfulResponse(savedItem);
     }
+
+    public Response<Item> changeStatus(long itemId, Status status){
+        Optional<Item> optItem = itemRepo.findById(itemId);
+
+        if(!optItem.isPresent()){
+            return Response.createFailureResponse("Item does not exist");
+        }
+        Item item = optItem.get();
+        item.setStatus(status);
+        itemRepo.save(item);
+
+        //todo: add live update
+        return Response.createSuccessfulResponse(item);
+    }
+
+    public Response<Item> changeDescription(long itemId, String description) {
+        Optional<Item> item = itemRepo.findById(itemId);
+        if(!item.isPresent()){
+            return Response.createFailureResponse("Can not update description- item does not exist");
+        }
+
+        Item updateItem = item.get();
+        updateItem.setDescription(description);
+
+        return Response.createSuccessfulResponse(itemRepo.save(updateItem));
+    }
+
 
     public Response<Item> changeAssignedToUser(Long itemId, User assignedToUser) {
         Optional<Item> itemFound = itemRepo.findById(itemId);
@@ -166,5 +150,19 @@ public class ItemService {
 
         commentRepo.deleteById(commentId);
         return Response.createSuccessfulResponse(commentId);
+    }
+
+    public Response<Item> changeAssignedUser(long itemId, User user){
+        Optional<Item> optItem = itemRepo.findById(itemId);
+        if(!optItem.isPresent()){
+            return Response.createFailureResponse("Can not change assigned user - item does not exist");
+        }
+
+        Item item = optItem.get();
+        item.setAssignedToUser(user);
+        itemRepo.save(item);
+        //todo: add live update
+
+        return Response.createSuccessfulResponse(item);
     }
 }

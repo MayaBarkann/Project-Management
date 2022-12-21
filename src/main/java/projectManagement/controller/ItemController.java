@@ -42,158 +42,112 @@ public class ItemController {
         if(!creator.isPresent()){
             return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
         }
+        Response<Item> response = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
 
-        Response<Item> res = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
-        if (res.isSucceed()) {
-            return ResponseEntity.ok().body(res);
-        }
-
-        return ResponseEntity.badRequest().body(res);
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
-//    @RequestMapping(value = "/create", method = RequestMethod.POST)
-//    public ResponseEntity<Response<Item>> createItem(@RequestBody CreateItemDTO item) {
-//        if (item == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//        if (item.boardId == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board id could not be null"));
-//        }
-//
-//        Optional<Board> optionalBoard = boardService.getBoardById(item.boardId);
-//        if (!optionalBoard.isPresent()) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board not found"));
-//        }
-//        Board board = optionalBoard.get();
-//
-//        if (item.creatorId == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("user creator id could not be null"));
-//
-//        }
-//
-//        Optional<User> optionalCreator = userService.getUser(item.creatorId);
-//        if (!optionalCreator.isPresent()) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("user creator not found"));
-//        }
-//        User creator = optionalCreator.get();
-//
-//        User assignedToUser = null;
-//        if (item.assignedToUserId != null) {
-//            Optional<User> optionalAssignedToUser = userService.getUser(item.assignedToUserId);
-//            if (!optionalAssignedToUser.isPresent()) {
-//                return ResponseEntity.badRequest().body(Response.createFailureResponse("user assignedTo not found"));
-//            }
-//            assignedToUser = optionalAssignedToUser.get();
-//
-//        }
-//        Item parentItem = null;
-//        if (item.parentId != null) {
-//            Optional<Item> optionalParentItem = itemService.getItem(item.parentId);
-//            if (!optionalParentItem.isPresent()) {
-//                return ResponseEntity.badRequest().body(Response.createFailureResponse("item parent not found"));
-//            }
-//            parentItem = optionalParentItem.get();
-//
-//        }
-//
-//
-//        Response<Item> res = itemService.createItem(item, creator, board, assignedToUser, parentItem);
-//
-//        if (res.isSucceed()) {
-//            return ResponseEntity.ok().body(res);
-//        } else {
-//            return ResponseEntity.badRequest().body(res);
-//        }
-//
-//
-//    }
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<Response<Long>> deleteItem(@RequestParam long itemId) {
         Response<Long> response = itemService.deleteItem(itemId);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
 
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
 
-//    @RequestMapping(value = "/changeType", method = RequestMethod.PUT)
-//    public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
+    @PutMapping("/change-type")
+    public  ResponseEntity<Response<Item>> changeType(@RequestParam long itemId, @RequestBody long typeId){
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not update type - Item does not exist"));
+        }
+
+        Response<Type> type = boardService.typeExistsInBoard(item.get().getBoard(),typeId);
+
+        if (!type.isSucceed()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Type does not exist in board"));
+        }
+
+        Response<Item> response = itemService.changeType(itemId, type.getData());
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
+
+
+    @PutMapping("/change-status")
+    public  ResponseEntity<Response<Item>> changeStatus(@RequestParam long itemId, @RequestBody long statusId) {
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not update status - Item does not exist"));
+        }
+
+        Response<Status> statusResponse = boardService.statusExistsInBoard(item.get().getBoard(), statusId);
+
+        if (!statusResponse.isSucceed()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Status does not exist in board"));
+        }
+
+        Response<Item> response = itemService.changeStatus(itemId, statusResponse.getData());
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
+
+
+    @PutMapping("/change-description")
+    public ResponseEntity<Response<Item>> changeItemDescription(@RequestParam long itemId, @RequestBody String description){
+        Response<Item> response = itemService.changeDescription(itemId, description);
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+
+    }
+
+    @PutMapping("/assignToUser")
+    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
+        Optional<User> assignedUser = userService.getUser(userId);
+
+        if(!assignedUser.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
+        }
+
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
+        }
+
+        Response<UserRoleInBoard> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
+
+        if(!userRoleInBoardResponse.isSucceed()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
+        }
+
+        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
+
+//    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
+//    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
 //
-//        if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
+//        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
 //            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
 //        }
 //
-//        Response<Item> response = itemService.changeType(addItemType);
+//        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
+//        if (!foundUser.isPresent()) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
+//        }
+//        User assignedToUser = foundUser.get();
+//        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
 //
 //        if (response.isSucceed()) {
 //            return ResponseEntity.ok().body(response);
 //        } else {
 //            return ResponseEntity.badRequest().body(response);
 //        }
-//    }
-
-//    @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
-//    public ResponseEntity<Response<Item>> changeItemStatus(@RequestBody ChangeStatusDTO changeStatusDTO) {
-//
-//        if (changeStatusDTO == null || changeStatusDTO.itemId == null || changeStatusDTO.newStatus == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//
-//        Response<Item> response = itemService.changeStatus(changeStatusDTO);
-//
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
 //
 //
 //    }
-
-    @RequestMapping(value = "/changeDescription", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody ChangeDescriptionDTO changeDescriptionDTO) {
-
-        if (changeDescriptionDTO == null || changeDescriptionDTO.itemId == null || changeDescriptionDTO.description == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Response<Item> response = itemService.changeDescription(changeDescriptionDTO);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
-
-    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
-
-        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
-        if (!foundUser.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
-        }
-        User assignedToUser = foundUser.get();
-        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
 
     @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
     public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {

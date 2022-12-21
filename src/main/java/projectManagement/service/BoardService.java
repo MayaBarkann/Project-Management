@@ -140,6 +140,31 @@ public class BoardService {
         return Response.createSuccessfulResponse(board.get());
     }
 
+    //todo: check again
+    public Response<Type> typeExistsInBoard(Board board, long typeId){
+        Optional<Type> typeExist = typeRepo.findById(typeId);
+
+        return typeExist.isPresent() && board.equals(typeExist.get().getBoard()) ?
+                Response.createSuccessfulResponse(typeExist.get()) : Response.createFailureResponse("Type does not exist");
+    }
+
+    public Response<Status> statusExistsInBoard(Board board, long statusId){
+        Optional<Status> statusExist = statusRepo.findById(statusId);
+
+        return statusExist.isPresent() && board.equals(statusExist.get().getBoard()) ?
+                Response.createSuccessfulResponse(statusExist.get()) : Response.createFailureResponse("Status does not exist");
+    }
+
+    public Response<UserRoleInBoard> userExistsInBoard(Board board, User user){
+        Optional<UserRoleInBoard> userRoleInBoard = userRoleInBoardRepo.findByUserAndBoard(user, board);
+        if(!userRoleInBoard.isPresent()){
+            return Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
+        }
+        return Response.createSuccessfulResponse(userRoleInBoard.get());
+    }
+
+
+
 
 
 
