@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 public class CreateItemDTO {
-
+//todo: goback
     public String title;
-    public String status;
+    public Long status;
     public ItemImportance importance;
-    public String description;
-    public String type;
-    public LocalDateTime dueDate;
+//    public String description;
+    public Long type;
+//    public LocalDateTime dueDate;
     public Long parentId;
     public Long boardId;
     public Long assignedToUserId;

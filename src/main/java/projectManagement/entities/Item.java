@@ -24,41 +24,42 @@ public class Item {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String status;
+    @JsonIncludeProperties(value = {"id", "status"})
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Status status;
 
     @Enumerated(EnumType.STRING)
     private ItemImportance importance;
+
     private String description;
 
+    @JsonIncludeProperties(value = {"id", "type"})
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn()
+    private Type type;
 
-    private String type;
     private LocalDate dueDate;
-
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
     private Set<Item> children;
 
     @JsonIncludeProperties(value = {"id"})
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn()
-
     private Item parent;
 
     @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn(nullable = false)
-
     private Board board;
 
     @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn()
-
     private User assignedToUser;
 
     @JsonIncludeProperties(value = {"id" , "name"})
-
     @ManyToOne()
     @JoinColumn(nullable = false)
     private User creator;
@@ -67,16 +68,24 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
 
-    public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
+//    public Item(String title, Status status, ItemImportance importance, Type type, Item parent, Board board, User creator, User assignedToUser) {
+//        this.title = title;
+//        this.status = status;
+//        this.importance = importance;
+//        this.type = type;
+//        this.parent = parent;
+//        this.board = board;
+//        this.creator = creator;
+//        this.assignedToUser = assignedToUser;
+//    }
+
+    public Item(String title, Status status, Board board, User creator) {
         this.title = title;
         this.status = status;
-        this.importance = importance;
-        this.type = type;
-        this.parent = parent;
         this.board = board;
         this.creator = creator;
-        this.assignedToUser = assignedToUser;
     }
+
 
     //    @OneToMany(mappedBy = "",cascade = CascadeType.ALL, orphanRemoval = true)
 //    @JoinColumn()

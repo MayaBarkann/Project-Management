@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -25,10 +26,14 @@ public class Type {
     @JoinColumn(nullable = false)
     private Board board;
 
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "type")
+    private Set<Item> items;
+
     public Type(Board board, String type) {
         this.type = type;
         this.board = board;
     }
+
 
 
 }

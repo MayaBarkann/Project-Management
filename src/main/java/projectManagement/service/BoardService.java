@@ -53,11 +53,24 @@ public class BoardService {
         return Response.createSuccessfulResponse(newBoard);
     }
 
-    public Response<Status> addStatus(Board board, String status) {
-        Status statusObj = new Status(board, status);
-        Status savedStatus = statusRepo.save(statusObj);
+    /**
+     * creates new Status with the given name and adds it to the given board
+     * @param boardId
+     * @param status name of the new status created
+     * @return the new status
+     */
+    public Response<Status> addStatus(long boardId, String status) {
+        if(status == null || status.isEmpty()){
+            logger.error("In BoardService - failed to create new status since it is empty or null");
+            return Response.createFailureResponse("Can not create empty status");
+        }
 
-        return Response.createSuccessfulResponse(savedStatus);
+        Optional<Board> board = getBoardById(boardId);
+        if(!board.isPresent()){
+            return Response.createFailureResponse("Can not add status - board does not exist");
+        }
+
+        return Response.createSuccessfulResponse(statusRepo.save(new Status(board.get(), status)));
     }
 
     /**
@@ -80,6 +93,53 @@ public class BoardService {
 
         return Response.createSuccessfulResponse(typeRepo.save(new Type(board.get(), type)));
     }
+
+    /**
+     *
+     * @param statusId
+     * @return
+     */
+    public Response<Long> removeStatus(long statusId){
+        Optional<Status> status = statusRepo.findById(statusId);
+        if(!status.isPresent()){
+            return Response.createFailureResponse("Status does not exist");
+        }
+        statusRepo.delete(status.get());
+        //todo: update live
+        return Response.createSuccessfulResponse(statusId);
+
+    }
+
+    /**
+     *
+     * @param typeId
+     * @return
+     */
+    public Response<Long> removeType(long typeId){
+        Optional<Type> type = typeRepo.findById(typeId);
+        if(!type.isPresent()){
+            return Response.createFailureResponse("Type does not exist");
+        }
+        typeRepo.delete(type.get());
+        //todo: update live
+        return Response.createSuccessfulResponse(typeId);
+
+    }
+
+    /**
+     *
+     * @param boardId
+     * @return
+     */
+    public Response<Board> getBoard(long boardId){
+        Optional<Board> board = boardRepo.findById(boardId);
+        if(!board.isPresent()) {
+            return Response.createFailureResponse("Board does not exist");
+        }
+
+        return Response.createSuccessfulResponse(board.get());
+    }
+
 
 
 
@@ -105,11 +165,4 @@ public class BoardService {
 //    }
 
 
-//    public Response<Item> addItem(long boardId, Item item) {
-//        if(boardRepo.findById(boardId).isPresent()){
-//            //TODO: add item to board
-//            return Response.createSuccessfulResponse(item);
-//        }
-//        return Response.createFailureResponse("no board id like that");
-//    }
 }

@@ -31,7 +31,6 @@ public class Board {
     @JsonIgnore
     private User admin;
 
-
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items;
 
@@ -47,5 +46,4 @@ public class Board {
         this.title = title;
         this.admin = admin;
     }
-
 }

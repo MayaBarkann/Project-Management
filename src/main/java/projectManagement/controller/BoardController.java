@@ -36,7 +36,7 @@ public class BoardController {
 
 
     /***
-     * This function filters item of the given board by given properties and values.
+     * This method filters item of the given board by given properties and values.
      * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
      * @param boardId - the id of the board we want to perform the filter on
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
@@ -61,13 +61,12 @@ public class BoardController {
     }
 
     /**
-     * This function creates a new board with the given user as the admin.
+     * This method creates a new board with the given user as the admin.
      * @param userId the admin of the new board
      * @param title the title of the new board
      * @return Response entity with successful response containing the new created board if the given user exists,
      * otherwise returns bad request with the reason.
      */
-    //todo: change userId to requestAttribute
     @PostMapping("/create-board")
     public ResponseEntity<Response<Board>> createBoard(@RequestAttribute long userId, @RequestBody String title){
         Optional<User> admin = userService.getUser(userId);
@@ -79,65 +78,69 @@ public class BoardController {
         return ResponseEntity.ok().body(boardService.createBoard(title, admin.get()));
     }
 
+    /**
+     * This method creates new type and add it to the given board
+     * @param boardId
+     * @param type
+     * @return response entity with successful response containing the new Type created if the given board exists,
+     * otherwise returns bad request containing failure Response with the reason for failure.
+     */
+    //todo: add live changes
     @PostMapping("/add-type")
     public ResponseEntity<Response<Type>> addType(@RequestParam long boardId, @RequestBody String type){
-        Response response = boardService.addType(boardId, type);
+        Response<Type> response = boardService.addType(boardId, type);
 
-        if(!response.isSucceed()){
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        return ResponseEntity.ok().body(response);
-
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
+    /**
+     * This method creates new status and add it to the given board
+     * @param boardId
+     * @param status
+     * @return response entity with successful response containing the new Status created if the given board exists,
+     * otherwise returns bad request containing failure Response with the reason for failure.
+     */
+    //todo: add live changes with sockets?
+    @PostMapping("/add-status")
+    public ResponseEntity<Response<Status>> addStatus(@RequestParam long boardId, @RequestBody String status){
+        Response<Status> response = boardService.addStatus(boardId, status);
 
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
 
+    /**
+     * This method removes the given status from board and deletes all items with this status
+     * @param boardId
+     * @param statusId id of the status we want to remove
+     * @return
+     */
+    //todo: remove boardId since it seems redundant
+    @DeleteMapping("/remove-status")
+    public ResponseEntity<Response<Long>> removeStatus(@RequestParam long boardId, @RequestParam long statusId){
+    //todo: need to remove all items from item table that has this status?
+        Response<Long> response = boardService.removeStatus(statusId);
 
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
 
-//    @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
-//    public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {
-//
-//        if (statusDTO == null || statusDTO.boardId == null || statusDTO.status == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//
-//
-//        Optional<Board> boardFound = boardService.getBoardById(statusDTO.boardId);
-//        if (!boardFound.isPresent()) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
-//        }
-//        Board board = boardFound.get();
-//
-//        Response<Status> response = boardService.addStatus(board, statusDTO.status);
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//
-//
-//    }
+    /**
+     *
+     * @param boardId
+     * @param typeId
+     * @return
+     */
+    @DeleteMapping("/remove-type")
+    public ResponseEntity<Response<Long>> removeType(@RequestParam long boardId, @RequestParam long typeId){
+        Response<Long> response = boardService.removeType(typeId);
 
-    @RequestMapping(value = "/{boardId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Board>> getItems(@PathVariable Long boardId) {
-        if (boardId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
 
-        Optional<Board> board = boardService.getBoardById(boardId);
-        if (!board.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
-        }
-        Response<Board> response = Response.createSuccessfulResponse(board.get());
+    @GetMapping(value = "/get")
+    public ResponseEntity<Response<Board>> getItems(@RequestParam long boardId) {
+        Response<Board> response = boardService.getBoard(boardId);
 
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
 
