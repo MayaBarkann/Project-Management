@@ -136,7 +136,7 @@ public class AuthService {
      * @param user
      * @return the created User
      */
-    private UserDTO createUser(UserRequest user, Provider provider) throws SQLDataException {
+    public UserDTO createUser(UserRequest user, Provider provider) throws SQLDataException {
         if(userRepo.findByEmail(user.getEmail()).isPresent()){
             throw new SQLDataException(String.format("Email %s already exists!", user.getEmail()));
         }
