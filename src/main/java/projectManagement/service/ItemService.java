@@ -39,7 +39,7 @@ public class ItemService {
     }
 
 
-    public Response<Long> deleteItem(long itemId) {
+    public Response<Item> deleteItem(long itemId) {
         Optional<Item> itemFound = itemRepo.findById(itemId);
 
         if (!itemFound.isPresent()) {
@@ -47,7 +47,7 @@ public class ItemService {
         }
 
         itemRepo.deleteById(itemId);
-        return Response.createSuccessfulResponse(itemId);
+        return Response.createSuccessfulResponse(itemFound.get());
     }
 
     public Response<Item> changeType(long itemId, Type type) {
@@ -133,13 +133,13 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findAll(specification));
     }
 
-    public Response<Comment> addComment(Item item, User user, String comment) {
-        Comment commentObj = new Comment(comment, user, item, LocalDateTime.now());
-        Comment savedComment = commentRepo.save(commentObj);
-
-
-        return Response.createSuccessfulResponse(savedComment);
-    }
+//    public Response<Comment> addComment(Item item, User user, String comment) {
+//        Comment commentObj = new Comment(comment, user, item, LocalDateTime.now());
+//        Comment savedComment = commentRepo.save(commentObj);
+//
+//
+//        return Response.createSuccessfulResponse(savedComment);
+//    }
 
     public Response<Long> deleteComment(Long commentId) {
         Optional<Comment> commentFound = commentRepo.findById(commentId);
@@ -165,4 +165,42 @@ public class ItemService {
 
         return Response.createSuccessfulResponse(item);
     }
+
+    public Response<Item> addComment(long itemId, long boardId, User user,  String commentStr){
+        Optional<Item> item = itemRepo.findById(itemId);
+        if(!item.isPresent()){
+            return Response.createFailureResponse("Item does not exist");
+        }
+
+        if(item.get().getBoard().getId() != boardId){
+            return Response.createFailureResponse("Item does not exist in board");
+        }
+
+        Comment comment = new Comment(commentStr, user, item.get(), LocalDateTime.now());
+        commentRepo.save(comment);
+
+        return Response.createSuccessfulResponse(item.get());
+
+    }
+
+    public Response<Item> deleteComment(long boardId, User user, long commentId){
+        Optional<Comment> comment = commentRepo.findById(commentId);
+        if(!comment.isPresent()){
+            return Response.createFailureResponse("Comment does not exist");
+        }
+
+        if(comment.get().getItem().getBoard().getId() != boardId){
+            return Response.createFailureResponse("Comment does not exist in board");
+        }
+
+        long itemId = comment.get().getItem().getId();
+        commentRepo.delete(comment.get());
+
+        return Response.createSuccessfulResponse(itemRepo.getReferenceById(itemId));
+
+    }
+
+
+
+
 }

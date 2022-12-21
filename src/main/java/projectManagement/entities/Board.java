@@ -32,6 +32,9 @@ public class Board {
     private User admin;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserRoleInBoard> userRoleInBoards;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items;
 
     @JsonIncludeProperties(value = {"id", "status"})

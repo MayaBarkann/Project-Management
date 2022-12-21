@@ -24,54 +24,54 @@ public class ItemController {
     BoardService boardService;
 
     @PostMapping(value = "/create")
-    public ResponseEntity<Response<Item>> createItem(@RequestParam long userId, @RequestBody CreateItem item) {
+    public ResponseEntity<String> createItem(@RequestAttribute long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
         if (item == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+            return ResponseEntity.badRequest().body("parameter could not be null");
         }
 
         if (item.getBoardId() == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board id could not be null"));
+            return ResponseEntity.badRequest().body("Board id could not be null");
         }
 
         Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
         if (!optionalBoard.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board not found"));
+            return ResponseEntity.badRequest().body("Board not found");
         }
 
         Optional<User> creator = userService.getUser(userId);
         if(!creator.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
+            return ResponseEntity.badRequest().body("User does not exist");
         }
         Response<Item> response = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
     @DeleteMapping(value = "/delete")
-    public ResponseEntity<Response<Long>> deleteItem(@RequestParam long itemId) {
-        Response<Long> response = itemService.deleteItem(itemId);
+    public ResponseEntity<String> deleteItem(@RequestParam long itemId) {
+        Response<Item> response = itemService.deleteItem(itemId);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Item was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
     @PutMapping("/change-type")
-    public  ResponseEntity<Response<Item>> changeType(@RequestParam long itemId, @RequestBody long typeId){
+    public  ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody long typeId){
         Optional<Item> item = itemService.getItem(itemId);
         if(!item.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not update type - Item does not exist"));
+            return ResponseEntity.badRequest().body("Can not update type - Item does not exist");
         }
 
         Response<Type> type = boardService.typeExistsInBoard(item.get().getBoard(),typeId);
 
         if (!type.isSucceed()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Type does not exist in board"));
+            return ResponseEntity.badRequest().body("Type does not exist in board");
         }
 
         Response<Item> response = itemService.changeType(itemId, type.getData());
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Type changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
@@ -93,7 +93,12 @@ public class ItemController {
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
-
+    /**
+     *
+     * @param itemId
+     * @param description
+     * @return
+     */
     @PutMapping("/change-description")
     public ResponseEntity<Response<Item>> changeItemDescription(@RequestParam long itemId, @RequestBody String description){
         Response<Item> response = itemService.changeDescription(itemId, description);
@@ -102,7 +107,13 @@ public class ItemController {
 
     }
 
-    @PutMapping("/assignToUser")
+    /**
+     *
+     * @param itemId
+     * @param userId
+     * @return
+     */
+    @PutMapping("/change-assign-to-user")
     public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
         Optional<User> assignedUser = userService.getUser(userId);
 
@@ -126,28 +137,6 @@ public class ItemController {
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
-//    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
-//    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
-//
-//        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//
-//        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
-//        if (!foundUser.isPresent()) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
-//        }
-//        User assignedToUser = foundUser.get();
-//        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
-//
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//
-//
-//    }
 
     @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
     public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {
@@ -180,46 +169,59 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/addComment", method = RequestMethod.POST)
-    public ResponseEntity<Response<Comment>> addComment(@RequestBody CommentDTO commentDTO) {
-
-        if (commentDTO == null || commentDTO.userId == null || commentDTO.itemId == null || commentDTO.comment == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+    /**
+     *
+     * @param userId
+     * @param boardId
+     * @param itemId
+     * @param commentStr
+     * @return
+     */
+    @PutMapping("/add-comment")
+    public ResponseEntity<String> addComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
+        Optional<User> user = userService.getUser(userId);
+        if(!user.isPresent()){
+            return ResponseEntity.badRequest().body("User does exist");
         }
+        Response<Item> response = itemService.addComment(itemId, boardId ,user.get(), commentStr );
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok().body("Added comment successfully") : ResponseEntity.badRequest().body(response.getMessage());
 
-
-        Optional<User> userFound = userService.getUser(commentDTO.userId);
-        if (!userFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the commented user could not be found"));
-        }
-        User user = userFound.get();
-
-        Optional<Item> itemFound = itemService.getItem(commentDTO.itemId);
-        if (!itemFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the item you want to comment on could not be found"));
-        }
-        Item item = itemFound.get();
-
-        Response<Comment> response = itemService.addComment(item, user, commentDTO.comment);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
     }
 
-    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
-    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
-
-        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+    /**
+     *
+     * @param userId
+     * @param boardId
+     * @param commentId
+     * @return
+     */
+    @DeleteMapping("delete-comment")
+    public ResponseEntity<String> deleteComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestBody long commentId){
+        Optional<User> user = userService.getUser(userId);
+        if(!user.isPresent()){
+            return ResponseEntity.badRequest().body("User does not exist");
         }
-
-        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+        Response<Item> response = itemService.deleteComment(boardId ,user.get(), commentId);
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok().body("Comment was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
+
+
+//    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
+//    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
+//
+//        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+//        }
+//
+//        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
+//        if (response.isSucceed()) {
+//            return ResponseEntity.ok().body(response);
+//        } else {
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//    }
+
+
 }

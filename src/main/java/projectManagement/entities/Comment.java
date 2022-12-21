@@ -33,16 +33,16 @@ public class Comment {
     private Item item;
 
 
-    private LocalDateTime dueDate;
+    private LocalDateTime dateTime;
 
     public Comment() {
     }
 
-    public Comment( String comment, User commentedUser, Item item, LocalDateTime dueDate) {
+    public Comment( String comment, User commentedUser, Item item, LocalDateTime dateTime) {
 
         this.comment = comment;
         this.commentedUser = commentedUser;
         this.item = item;
-        this.dueDate = dueDate;
+        this.dateTime = dateTime;
     }
 }
