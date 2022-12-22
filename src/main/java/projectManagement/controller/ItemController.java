@@ -24,7 +24,7 @@ public class ItemController {
     BoardService boardService;
 
     @PostMapping(value = "/create")
-    public ResponseEntity<String> createItem(@RequestAttribute long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
+    public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
         if (item == null) {
             return ResponseEntity.badRequest().body("parameter could not be null");
         }
@@ -76,21 +76,21 @@ public class ItemController {
 
 
     @PutMapping("/change-status")
-    public  ResponseEntity<Response<Item>> changeStatus(@RequestParam long itemId, @RequestBody long statusId) {
+    public  ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody long statusId) {
         Optional<Item> item = itemService.getItem(itemId);
         if(!item.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not update status - Item does not exist"));
+            return ResponseEntity.badRequest().body("Can not update status - Item does not exist");
         }
 
         Response<Status> statusResponse = boardService.statusExistsInBoard(item.get().getBoard(), statusId);
 
         if (!statusResponse.isSucceed()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Status does not exist in board"));
+            return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
         Response<Item> response = itemService.changeStatus(itemId, statusResponse.getData());
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Status changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
@@ -100,10 +100,10 @@ public class ItemController {
      * @return
      */
     @PutMapping("/change-description")
-    public ResponseEntity<Response<Item>> changeItemDescription(@RequestParam long itemId, @RequestBody String description){
+    public ResponseEntity<String> changeItemDescription(@RequestParam long itemId, @RequestBody String description){
         Response<Item> response = itemService.changeDescription(itemId, description);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Description has changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
 
     }
 
@@ -126,7 +126,7 @@ public class ItemController {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
         }
 
-        Response<UserRoleInBoard> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
+        Response<String> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
 
         if(!userRoleInBoardResponse.isSucceed()){
             return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));

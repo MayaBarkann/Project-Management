@@ -8,12 +8,15 @@ import org.springframework.stereotype.Service;
 import projectManagement.controller.BoardController;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
-import projectManagement.repository.UserRoleInBoardRepo;
+//import projectManagement.repository.UserRoleInBoardRepo;
 import projectManagement.repository.StatusRepo;
 import projectManagement.repository.TypeRepo;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class BoardService {
@@ -21,8 +24,8 @@ public class BoardService {
     private static Logger logger = LogManager.getLogger(BoardService.class.getName());
     @Autowired
     BoardRepo boardRepo;
-    @Autowired
-    UserRoleInBoardRepo userRoleInBoardRepo;
+//    @Autowired
+//    UserRoleInBoardRepo userRoleInBoardRepo;
     @Autowired
     StatusRepo statusRepo;
     @Autowired
@@ -42,14 +45,23 @@ public class BoardService {
      * @return the new created board
      */
     public Response<Board> createBoard(String title, User admin){
+        System.out.println(1);
         Board newBoard = boardRepo.save(new Board(title, admin));
-        UserRoleInBoard userInBoard = new UserRoleInBoard();
-        userInBoard.setId(new UserBoardPk());
-        userInBoard.setBoard(newBoard);
-        userInBoard.setUser(admin);
-        userInBoard.setUserRole(UserRole.ADMIN);
-        userRoleInBoardRepo.save(userInBoard);
+        System.out.println(1);UserRoleInBoard userInBoard = new UserRoleInBoard();
+        System.out.println(1);userInBoard.setUserRole(UserRole.ADMIN);
+//        userInBoard.setBoard(newBoard);
+        System.out.println(1);userInBoard.setUser(admin);
+//        Set<UserRoleInBoard> set = new HashSet<>();
+//        set.add(userInBoard);
+        System.out.println(1);newBoard.getUserRoleInBoards().add(userInBoard);
+        boardRepo.save(newBoard);
 
+//        userInBoard.setId(new UserBoardPk());
+//        userInBoard.setBoard(newBoard);
+//        userInBoard.setUser(admin);
+//        userInBoard.setUserRole(UserRole.ADMIN);
+//        userRoleInBoardRepo.save(userInBoard);
+        System.out.println(1);
         return Response.createSuccessfulResponse(newBoard);
     }
 
@@ -155,12 +167,35 @@ public class BoardService {
                 Response.createSuccessfulResponse(statusExist.get()) : Response.createFailureResponse("Status does not exist");
     }
 
-    public Response<UserRoleInBoard> userExistsInBoard(Board board, User user){
-        Optional<UserRoleInBoard> userRoleInBoard = userRoleInBoardRepo.findByUserAndBoard(user, board);
-        if(!userRoleInBoard.isPresent()){
+    public Response<String> userExistsInBoard(Board board, User user){
+        Set<UserRoleInBoard> userRoleInBoardSet =board.getUserRoleInBoards();
+        if(userRoleInBoardSet.stream().anyMatch(userRoleInBoard -> userRoleInBoard.getUser().equals(user))){
             return Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
         }
-        return Response.createSuccessfulResponse(userRoleInBoard.get());
+
+
+//        Optional<UserRoleInBoard> userRoleInBoard = userRoleInBoardRepo.findByUserAndBoard(user, board);
+//        if(!userRoleInBoard.isPresent()){
+//            return Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
+//        }
+        //todo
+        return Response.createSuccessfulResponse("Success");
+    }
+
+    public Response<UserRoleInBoard> assignUserRole(long boardId, User user, UserRole role){
+        Board board = boardRepo.findById(boardId).get();
+        UserRoleInBoard userRoleInBoard = new UserRoleInBoard(user, role);
+        board.addUserRole(userRoleInBoard);
+        boardRepo.save(board);
+        return Response.createSuccessfulResponse(userRoleInBoard);
+    }
+
+    public Response<UserRoleInBoard> removeUserRole(long boardId, User user, UserRole role){
+        Board board = boardRepo.findById(boardId).get();
+        UserRoleInBoard userRoleInBoard = new UserRoleInBoard(user, role);
+        board.removeUserRole(userRoleInBoard);
+        boardRepo.save(board);
+        return Response.createSuccessfulResponse(userRoleInBoard);
     }
 
 

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import projectManagement.controller.entities.AddUserRoleDTO;
 import projectManagement.controller.entities.CommentDTO;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.controller.entities.StatusDTO;
@@ -68,9 +69,11 @@ public class BoardController {
      * otherwise returns bad request with the reason.
      */
     @PostMapping("/create-board")
-    public ResponseEntity<Response<Board>> createBoard(@RequestAttribute long userId, @RequestBody String title){
+    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestBody String title){
+        System.out.println(userId +"ff "+ title);
         Optional<User> admin = userService.getUser(userId);
         logger.info("In BoardController - creating new board");
+        logger.info(admin.isPresent());
         if (!admin.isPresent()){
             logger.error("In BoardController - can not create new board since this user does not exist");
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
@@ -143,71 +146,21 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
+    @PostMapping(value = "/assign-role-to-user")
+    public ResponseEntity<Response<UserRoleInBoard>> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+//        Response<Board> response = boardService.getBoard(boardId);
+        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+        Response<UserRoleInBoard> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
 
-//    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> create(@RequestBody Board board) {
-//        // TODO: we need validation when create a board?
-//            Response<Board> response = boardService.createBoard(board);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "delete", method = RequestMethod.DELETE, consumes = "application/json")
-//    public ResponseEntity<Response> delete(@RequestParam long boardId) {
-//        if(Validation.validateBoard(boardId)) {
-//            Response<Board> response = boardService.delete(boardId);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "rename", method = RequestMethod.PATCH, consumes = "application/json")
-//    public ResponseEntity<Response> rename(@RequestParam long boardId,@RequestParam String name) {
-//        if(Validation.validateBoard(boardId)) {
-//            Response<Board> response = boardService.rename(boardId,name);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "addItem", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> addItem(@RequestBody Item item, @RequestParam long boardId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.addItem(boardId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "removeItem", method = RequestMethod.DELETE, consumes = "application/json")
-//    public ResponseEntity<Response> removeItem(@RequestBody Item item, @RequestParam long boardId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.removeItem(boardId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "assignItemToUser", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> assignItemToUser(@RequestBody Item item, @RequestParam long boardId, @RequestParam long userId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.assignItemToUser(boardId,userId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
+    @DeleteMapping(value = "/remove-user-role")
+    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
+
 
 
 }

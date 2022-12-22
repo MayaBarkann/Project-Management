@@ -31,22 +31,35 @@ public class Board {
     @JsonIgnore
     private User admin;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserRoleInBoard> userRoleInBoards;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserRoleInBoard> userRoleInBoards = new HashSet<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Item> items;
+    private Set<Item> items = new HashSet<>();
 
     @JsonIncludeProperties(value = {"id", "status"})
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Status> statuses;
+    private Set<Status> statuses = new HashSet<>();
 
     @JsonIncludeProperties(value = {"id", "type"})
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Type> types;
+    private Set<Type> types = new HashSet<>();
 
     public Board(String title, User admin) {
         this.title = title;
         this.admin = admin;
     }
+
+    public Set<UserRoleInBoard> addUserRole(UserRoleInBoard userRoleInBoard){
+        this.userRoleInBoards.add(userRoleInBoard);
+        return this.userRoleInBoards;
+    }
+
+    public Set<UserRoleInBoard> removeUserRole(UserRoleInBoard userRoleInBoard){
+        this.userRoleInBoards.remove(userRoleInBoard);
+        return this.userRoleInBoards;
+    }
+
+
+
 }
