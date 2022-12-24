@@ -12,8 +12,8 @@ import projectManagement.controller.entities.CommentDTO;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.controller.entities.StatusDTO;
 import projectManagement.entities.*;
-import projectManagement.repository.StatusRepo;
-import projectManagement.repository.TypeRepo;
+//import projectManagement.repository.StatusRepo;
+//import projectManagement.repository.TypeRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
@@ -105,25 +105,25 @@ public class BoardController {
      */
     //todo: add live changes with sockets?
     @PostMapping("/add-status")
-    public ResponseEntity<Response<Status>> addStatus(@RequestParam long boardId, @RequestBody String status){
-        Response<Status> response = boardService.addStatus(boardId, status);
+    public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status){
+        Response<String> response = boardService.addStatus(boardId, status);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
      * This method removes the given status from board and deletes all items with this status
      * @param boardId
-     * @param statusId id of the status we want to remove
+     * @param status the status we want to remove
      * @return
      */
     //todo: remove boardId since it seems redundant
     @DeleteMapping("/remove-status")
-    public ResponseEntity<Response<Long>> removeStatus(@RequestParam long boardId, @RequestParam long statusId){
+    public ResponseEntity<String> removeStatus(@RequestParam long boardId, @RequestParam String status){
     //todo: need to remove all items from item table that has this status?
-        Response<Long> response = boardService.removeStatus(statusId);
+        Response<String> response = boardService.removeStatus(boardId, status);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**

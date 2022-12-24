@@ -42,9 +42,15 @@ public class ItemController {
         if(!creator.isPresent()){
             return ResponseEntity.badRequest().body("User does not exist");
         }
-        Response<Item> response = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
 
-        return response.isSucceed() ? ResponseEntity.ok().body("Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
+        Response<String> responseStatus = boardService.statusExistsInBoard(optionalBoard.get(), item.getStatus());
+        if (!responseStatus.isSucceed()){
+            return ResponseEntity.badRequest().body(responseStatus.getMessage());
+        }
+
+        itemService.createItem(item.getTitle(), item.getStatus(), creator.get(), optionalBoard.get());
+//todo: add live update
+        return ResponseEntity.ok().body("Item was created successfully");
     }
 
 
@@ -76,19 +82,17 @@ public class ItemController {
 
 
     @PutMapping("/change-status")
-    public  ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody long statusId) {
+    public  ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody String status) {
         Optional<Item> item = itemService.getItem(itemId);
         if(!item.isPresent()){
             return ResponseEntity.badRequest().body("Can not update status - Item does not exist");
         }
 
-        Response<Status> statusResponse = boardService.statusExistsInBoard(item.get().getBoard(), statusId);
-
-        if (!statusResponse.isSucceed()){
+        if(!boardService.statusExistsInBoard(item.get().getBoard(), status).isSucceed()){
             return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
-        Response<Item> response = itemService.changeStatus(itemId, statusResponse.getData());
+        Response<Item> response = itemService.changeStatus(itemId, status);
 
         return response.isSucceed() ? ResponseEntity.ok().body("Status changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }

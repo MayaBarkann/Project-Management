@@ -24,10 +24,11 @@ public class Item {
     @Column(nullable = false)
     private String title;
 
-    @JsonIncludeProperties(value = {"id", "status"})
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Status status;
+//    @JsonIncludeProperties(value = {"id", "status"})
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(nullable = false)
+    @Column(nullable = false)
+    private String status;
 
     @Enumerated(EnumType.STRING)
     private ItemImportance importance;
@@ -79,7 +80,14 @@ public class Item {
 //        this.assignedToUser = assignedToUser;
 //    }
 
-    public Item(String title, Status status, Board board, User creator) {
+//    public Item(String title, Status status, Board board, User creator) {
+//        this.title = title;
+////        this.status = status;
+//        this.board = board;
+//        this.creator = creator;
+//    }
+
+    public Item(String title, String status, Board board, User creator) {
         this.title = title;
         this.status = status;
         this.board = board;

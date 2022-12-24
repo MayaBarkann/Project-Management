@@ -11,6 +11,7 @@ import javax.persistence.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Setter
@@ -37,9 +38,11 @@ public class Board {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items = new HashSet<>();
 
-    @JsonIncludeProperties(value = {"id", "status"})
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Status> statuses = new HashSet<>();
+//    @JsonIncludeProperties(value = {"id", "status"})
+//    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = false)
+    @ElementCollection()
+    private Set<String> statuses = new HashSet<>();
 
     @JsonIncludeProperties(value = {"id", "type"})
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,6 +62,22 @@ public class Board {
         this.userRoleInBoards.remove(userRoleInBoard);
         return this.userRoleInBoards;
     }
+
+    public Set<String> addStatus(String status){
+        this.statuses.add(status);
+        return this.statuses;
+    }
+
+    //todo - remove all items that belongs to this status
+    public Set<String> removeStatus(String status){
+        this.statuses.remove(status);
+        this.items = this.items.stream().filter(item -> !item.getStatus().equals(status)).collect(Collectors.toSet());
+        return this.statuses;
+    }
+
+//    public boolean statusExistsInBoard(String status){
+//        return this.statuses.contains(status);
+//    }
 
 
 

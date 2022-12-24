@@ -6,7 +6,7 @@ import projectManagement.controller.entities.*;
 import projectManagement.entities.*;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
-import projectManagement.repository.StatusRepo;
+//import projectManagement.repository.StatusRepo;
 
 import javax.swing.text.html.Option;
 import java.time.LocalDate;
@@ -20,22 +20,12 @@ public class ItemService {
     ItemRepo itemRepo;
     @Autowired
     CommentRepo commentRepo;
-    @Autowired
-    StatusRepo statusRepo;
+//    @Autowired
+//    StatusRepo statusRepo;
 
 
-    public Response<Item> createItem(String title, long statusId, User creator, Board board){
-        Optional<Status> status = statusRepo.findById(statusId);
-
-        if(!status.isPresent()){
-            return Response.createFailureResponse("Can not create item - status does not exist");
-        }
-
-        if(!status.get().getBoard().equals(board)){
-            return Response.createFailureResponse("Can not create item - invalid status");
-        }
-
-        return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status.get(), board, creator)));
+    public Response<Item> createItem(String title, String status, User creator, Board board){
+        return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status, board, creator)));
     }
 
 
@@ -64,7 +54,7 @@ public class ItemService {
 
     }
 
-    public Response<Item> changeStatus(long itemId, Status status){
+    public Response<Item> changeStatus(long itemId, String status){
         Optional<Item> optItem = itemRepo.findById(itemId);
 
         if(!optItem.isPresent()){
