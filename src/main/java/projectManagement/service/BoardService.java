@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import projectManagement.controller.BoardController;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
-//import projectManagement.repository.UserRoleInBoardRepo;
-import projectManagement.repository.StatusRepo;
 import projectManagement.repository.TypeRepo;
 
 import javax.swing.text.html.Option;
@@ -26,8 +24,8 @@ public class BoardService {
     BoardRepo boardRepo;
 //    @Autowired
 //    UserRoleInBoardRepo userRoleInBoardRepo;
-    @Autowired
-    StatusRepo statusRepo;
+//    @Autowired
+//    StatusRepo statusRepo;
     @Autowired
     TypeRepo typeRepo;
 
@@ -68,22 +66,47 @@ public class BoardService {
     /**
      * creates new Status with the given name and adds it to the given board
      * @param boardId
-     * @param status name of the new status created
+     * @param statusStr name of the new status created
      * @return the new status
      */
-    public Response<Status> addStatus(long boardId, String status) {
-        if(status == null || status.isEmpty()){
-            logger.error("In BoardService - failed to create new status since it is empty or null");
-            return Response.createFailureResponse("Can not create empty status");
-        }
-
+    public Response<Status> addStatus(long boardId, String statusStr) {
         Optional<Board> board = getBoardById(boardId);
         if(!board.isPresent()){
+            logger.error("In BoardService - failed to add status, board does not exist");
             return Response.createFailureResponse("Can not add status - board does not exist");
         }
 
-        return Response.createSuccessfulResponse(statusRepo.save(new Status(board.get(), status)));
+        Status status = new Status(statusStr);
+        board.get().addStatus(status);
+        boardRepo.save(board.get());
+        //todo: add live update
+        return Response.createSuccessfulResponse(status);
     }
+
+    /**
+     *
+     * @param statusId
+     * @return
+     */
+    public Response<Status> removeStatus(long boardId, long statusId){
+        Optional<Board> board = getBoardById(boardId);
+        if(!board.isPresent()){
+            logger.error("In BoardService - failed to remove status, board does not exist");
+            return Response.createFailureResponse("Can not remove status - board does not exist");
+        }
+        Optional<Status> status = getStatusById(board.get(), statusId);
+
+        if(!status.isPresent()){
+            logger.error("In BoardService - failed to remove status, status does not exist");
+            return Response.createFailureResponse("Can not remove status - status does not exist");
+        }
+        //todo: add live update
+        board.get().removeStatus(status.get());
+        boardRepo.save(board.get());
+
+        return Response.createSuccessfulResponse(status.get());
+    }
+
 
     /**
      *
@@ -106,21 +129,7 @@ public class BoardService {
         return Response.createSuccessfulResponse(typeRepo.save(new Type(board.get(), type)));
     }
 
-    /**
-     *
-     * @param statusId
-     * @return
-     */
-    public Response<Long> removeStatus(long statusId){
-        Optional<Status> status = statusRepo.findById(statusId);
-        if(!status.isPresent()){
-            return Response.createFailureResponse("Status does not exist");
-        }
-        statusRepo.delete(status.get());
-        //todo: update live
-        return Response.createSuccessfulResponse(statusId);
 
-    }
 
     /**
      *
@@ -160,12 +169,12 @@ public class BoardService {
                 Response.createSuccessfulResponse(typeExist.get()) : Response.createFailureResponse("Type does not exist");
     }
 
-    public Response<Status> statusExistsInBoard(Board board, long statusId){
-        Optional<Status> statusExist = statusRepo.findById(statusId);
-
-        return statusExist.isPresent() && board.equals(statusExist.get().getBoard()) ?
-                Response.createSuccessfulResponse(statusExist.get()) : Response.createFailureResponse("Status does not exist");
-    }
+//    public Response<Status> statusExistsInBoard(Board board, long statusId){
+//        Optional<Status> statusExist = statusRepo.findById(statusId);
+//
+//        return statusExist.isPresent() && board.equals(statusExist.get().getBoard()) ?
+//                Response.createSuccessfulResponse(statusExist.get()) : Response.createFailureResponse("Status does not exist");
+//    }
 
     public Response<String> userExistsInBoard(Board board, User user){
         Set<UserRoleInBoard> userRoleInBoardSet =board.getUserRoleInBoards();
@@ -196,6 +205,10 @@ public class BoardService {
         board.removeUserRole(userRoleInBoard);
         boardRepo.save(board);
         return Response.createSuccessfulResponse(userRoleInBoard);
+    }
+
+    public Optional<Status> getStatusById(Board board, long statusId){
+        return board.getStatuses().stream().filter(status -> status.getId() == statusId).findFirst();
     }
 
 

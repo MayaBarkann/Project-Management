@@ -48,7 +48,7 @@ public class TokenFilter extends GenericFilterBean{
                 try {
                     System.out.println(token);
                     Long userId = userService.checkTokenToUserInDB(token);
-                    request.setAttribute("userId", userId);
+                    request.setAttribute("user", userService.getUser(1));
                     System.out.println("token is:" +userId);
                     System.out.println("token is:" +userId);
                     System.out.println("token is:" +userId);

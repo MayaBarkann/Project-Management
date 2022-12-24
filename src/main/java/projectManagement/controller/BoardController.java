@@ -12,7 +12,6 @@ import projectManagement.controller.entities.CommentDTO;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.controller.entities.StatusDTO;
 import projectManagement.entities.*;
-import projectManagement.repository.StatusRepo;
 import projectManagement.repository.TypeRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
@@ -105,10 +104,10 @@ public class BoardController {
      */
     //todo: add live changes with sockets?
     @PostMapping("/add-status")
-    public ResponseEntity<Response<Status>> addStatus(@RequestParam long boardId, @RequestBody String status){
+    public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status){
         Response<Status> response = boardService.addStatus(boardId, status);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Status was added successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
@@ -119,11 +118,11 @@ public class BoardController {
      */
     //todo: remove boardId since it seems redundant
     @DeleteMapping("/remove-status")
-    public ResponseEntity<Response<Long>> removeStatus(@RequestParam long boardId, @RequestParam long statusId){
+    public ResponseEntity<String> removeStatus(@RequestParam long boardId, @RequestParam long statusId){
     //todo: need to remove all items from item table that has this status?
-        Response<Long> response = boardService.removeStatus(statusId);
+        Response<Status> response = boardService.removeStatus(boardId, statusId);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body("Status is removed") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**

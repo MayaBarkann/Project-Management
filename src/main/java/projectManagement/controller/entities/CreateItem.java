@@ -10,7 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateItem {
-    private Long statusId;
-    private Long boardId;
+    private long statusId;
     private String title;
 }
