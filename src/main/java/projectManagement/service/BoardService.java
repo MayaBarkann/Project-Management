@@ -3,20 +3,11 @@ package projectManagement.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import projectManagement.controller.BoardController;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
-//import projectManagement.repository.UserRoleInBoardRepo;
-//import projectManagement.repository.StatusRepo;
-//import projectManagement.repository.TypeRepo;
-
-import javax.swing.text.html.Option;
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
+
 
 @Service
 public class BoardService {
@@ -24,14 +15,6 @@ public class BoardService {
     private static Logger logger = LogManager.getLogger(BoardService.class.getName());
     @Autowired
     BoardRepo boardRepo;
-//    @Autowired
-//    UserRoleInBoardRepo userRoleInBoardRepo;
-//    @Autowired
-//    StatusRepo statusRepo;
-//    @Autowired
-//    TypeRepo typeRepo;
-
-
 
     public Optional<Board> getBoardById(long boardId) {
         return boardRepo.findById(boardId);
@@ -45,24 +28,8 @@ public class BoardService {
      * @return the new created board
      */
     public Response<Board> createBoard(String title, User admin){
-        System.out.println(1);
         Board newBoard = boardRepo.save(new Board(title, admin));
-////        UserRoleInBoard userInBoard = new UserRoleInBoard();
-//        userInBoard.setUserRole(UserRole.ADMIN);
-//        userInBoard.setBoard(newBoard);
-//        System.out.println(1);
-//        userInBoard.setUser(admin);
-//        Set<UserRoleInBoard> set = new HashSet<>();
-//        set.add(userInBoard);
-//        System.out.println(1);newBoard.getUserRoleInBoards().add(userInBoard);
-//        boardRepo.save(newBoard);
-
-//        userInBoard.setId(new UserBoardPk());
-//        userInBoard.setBoard(newBoard);
-//        userInBoard.setUser(admin);
-//        userInBoard.setUserRole(UserRole.ADMIN);
-//        userRoleInBoardRepo.save(userInBoard);
-        System.out.println(1);
+        
         return Response.createSuccessfulResponse(newBoard);
     }
 
