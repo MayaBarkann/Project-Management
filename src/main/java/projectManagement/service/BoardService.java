@@ -29,7 +29,7 @@ public class BoardService {
      */
     public Response<Board> createBoard(String title, User admin){
         Board newBoard = boardRepo.save(new Board(title, admin));
-        
+
         return Response.createSuccessfulResponse(newBoard);
     }
 
