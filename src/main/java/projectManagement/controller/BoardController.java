@@ -90,10 +90,10 @@ public class BoardController {
      */
     //todo: add live changes
     @PostMapping("/add-type")
-    public ResponseEntity<Response<Type>> addType(@RequestParam long boardId, @RequestBody String type){
-        Response<Type> response = boardService.addType(boardId, type);
+    public ResponseEntity<String> addType(@RequestParam long boardId, @RequestBody String type){
+        Response<String> response = boardService.addType(boardId, type);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
@@ -126,17 +126,12 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
-    /**
-     *
-     * @param boardId
-     * @param typeId
-     * @return
-     */
-    @DeleteMapping("/remove-type")
-    public ResponseEntity<Response<Long>> removeType(@RequestParam long boardId, @RequestParam long typeId){
-        Response<Long> response = boardService.removeType(typeId);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    @DeleteMapping("/remove-type")
+    public ResponseEntity<String> removeType(@RequestParam long boardId, @RequestParam String type){
+        Response<String> response = boardService.removeType(boardId, type);
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     @GetMapping(value = "/get")
@@ -146,20 +141,20 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 
-    @PostMapping(value = "/assign-role-to-user")
-    public ResponseEntity<Response<UserRoleInBoard>> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
-//        Response<Board> response = boardService.getBoard(boardId);
-        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
-        Response<UserRoleInBoard> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-    }
-
-    @DeleteMapping(value = "/remove-user-role")
-    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
-        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
-        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-    }
+//    @PostMapping(value = "/assign-role-to-user")
+//    public ResponseEntity<Response<UserRoleInBoard>> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+////        Response<Board> response = boardService.getBoard(boardId);
+//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+//        Response<UserRoleInBoard> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+//    }
+//
+//    @DeleteMapping(value = "/remove-user-role")
+//    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+//        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+//    }
 
 
 

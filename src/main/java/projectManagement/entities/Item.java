@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -28,17 +29,15 @@ public class Item {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(nullable = false)
     @Column(nullable = false)
-    private String status;
+    private String status = "";
 
     @Enumerated(EnumType.STRING)
     private ItemImportance importance;
 
     private String description;
 
-    @JsonIncludeProperties(value = {"id", "type"})
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn()
-    private Type type;
+    @Column(nullable = false)
+    private String type = "";
 
     private LocalDate dueDate;
 
@@ -95,11 +94,10 @@ public class Item {
     }
 
 
-    //    @OneToMany(mappedBy = "",cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn()
-//    private List<ItemComment> comment;
 
-//    private Set<String> comments;
+
+
+
 
 
 }

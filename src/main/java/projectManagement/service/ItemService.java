@@ -40,7 +40,7 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemFound.get());
     }
 
-    public Response<Item> changeType(long itemId, Type type) {
+    public Response<Item> changeType(long itemId, String type) {
         Optional<Item> optItem = itemRepo.findById(itemId);
         if(!optItem.isPresent()){
             return Response.createFailureResponse("Item does not exist");

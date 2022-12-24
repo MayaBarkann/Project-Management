@@ -1,5 +1,6 @@
 package projectManagement.controller;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,19 +64,23 @@ public class ItemController {
 
 
     @PutMapping("/change-type")
-    public  ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody long typeId){
+    public  ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody String type){
+        if(type == null){
+            return ResponseEntity.badRequest().body("Can not update type - type is null");
+        }
+
         Optional<Item> item = itemService.getItem(itemId);
         if(!item.isPresent()){
             return ResponseEntity.badRequest().body("Can not update type - Item does not exist");
         }
 
-        Response<Type> type = boardService.typeExistsInBoard(item.get().getBoard(),typeId);
+        Response<String> responseType = boardService.typeExistsInBoard(item.get().getBoard(),type);
 
-        if (!type.isSucceed()){
-            return ResponseEntity.badRequest().body("Type does not exist in board");
+        if (!responseType.isSucceed()){
+            return ResponseEntity.badRequest().body(responseType.getMessage());
         }
 
-        Response<Item> response = itemService.changeType(itemId, type.getData());
+        Response<Item> response = itemService.changeType(itemId, type);
 
         return response.isSucceed() ? ResponseEntity.ok().body("Type changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
@@ -111,35 +116,30 @@ public class ItemController {
 
     }
 
-    /**
-     *
-     * @param itemId
-     * @param userId
-     * @return
-     */
-    @PutMapping("/change-assign-to-user")
-    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
-        Optional<User> assignedUser = userService.getUser(userId);
-
-        if(!assignedUser.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
-        }
-
-        Optional<Item> item = itemService.getItem(itemId);
-        if(!item.isPresent()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
-        }
-
-        Response<String> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
-
-        if(!userRoleInBoardResponse.isSucceed()){
-            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
-        }
-
-        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
-
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-    }
+    //todo
+//    @PutMapping("/change-assign-to-user")
+//    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
+//        Optional<User> assignedUser = userService.getUser(userId);
+//
+//        if(!assignedUser.isPresent()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
+//        }
+//
+//        Optional<Item> item = itemService.getItem(itemId);
+//        if(!item.isPresent()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
+//        }
+//
+//        Response<String> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
+//
+//        if(!userRoleInBoardResponse.isSucceed()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
+//        }
+//
+//        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
+//
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+//    }
 
 
     @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)

@@ -10,7 +10,7 @@ import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 //import projectManagement.repository.UserRoleInBoardRepo;
 //import projectManagement.repository.StatusRepo;
-import projectManagement.repository.TypeRepo;
+//import projectManagement.repository.TypeRepo;
 
 import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
@@ -28,8 +28,8 @@ public class BoardService {
 //    UserRoleInBoardRepo userRoleInBoardRepo;
 //    @Autowired
 //    StatusRepo statusRepo;
-    @Autowired
-    TypeRepo typeRepo;
+//    @Autowired
+//    TypeRepo typeRepo;
 
 
 
@@ -47,14 +47,15 @@ public class BoardService {
     public Response<Board> createBoard(String title, User admin){
         System.out.println(1);
         Board newBoard = boardRepo.save(new Board(title, admin));
-        System.out.println(1);UserRoleInBoard userInBoard = new UserRoleInBoard();
-        System.out.println(1);userInBoard.setUserRole(UserRole.ADMIN);
+////        UserRoleInBoard userInBoard = new UserRoleInBoard();
+//        userInBoard.setUserRole(UserRole.ADMIN);
 //        userInBoard.setBoard(newBoard);
-        System.out.println(1);userInBoard.setUser(admin);
+//        System.out.println(1);
+//        userInBoard.setUser(admin);
 //        Set<UserRoleInBoard> set = new HashSet<>();
 //        set.add(userInBoard);
-        System.out.println(1);newBoard.getUserRoleInBoards().add(userInBoard);
-        boardRepo.save(newBoard);
+//        System.out.println(1);newBoard.getUserRoleInBoards().add(userInBoard);
+//        boardRepo.save(newBoard);
 
 //        userInBoard.setId(new UserBoardPk());
 //        userInBoard.setBoard(newBoard);
@@ -94,7 +95,7 @@ public class BoardService {
      * @param type
      * @return
      */
-    public Response<Type> addType(long boardId, String type){
+    public Response<String> addType(long boardId, String type){
         if(type == null || type.isEmpty()){
             logger.error("In BoardService - failed to create new type since it is empty or null");
             return Response.createFailureResponse("Can not create empty type");
@@ -106,7 +107,10 @@ public class BoardService {
             return Response.createFailureResponse("Can not create new type - board does not exist");
         }
 
-        return Response.createSuccessfulResponse(typeRepo.save(new Type(board.get(), type)));
+        Board newBoard = board.get();
+        newBoard.addType(type);
+        boardRepo.save(newBoard);
+        return Response.createSuccessfulResponse(type);
     }
 
     /**
@@ -131,20 +135,23 @@ public class BoardService {
         return Response.createSuccessfulResponse(status);
     }
 
-    /**
-     *
-     * @param typeId
-     * @return
-     */
-    public Response<Long> removeType(long typeId){
-        Optional<Type> type = typeRepo.findById(typeId);
-        if(!type.isPresent()){
-            return Response.createFailureResponse("Type does not exist");
-        }
-        typeRepo.delete(type.get());
-        //todo: update live
-        return Response.createSuccessfulResponse(typeId);
 
+    public Response<String> removeType(long boardId, String type){
+        if(type == null || type.isEmpty()){
+            logger.error("In BoardService - failed to create new type since it is empty or null");
+            return Response.createFailureResponse("Can not create empty type");
+        }
+
+        Optional<Board> board = getBoardById(boardId);
+        if(!board.isPresent()){
+            return Response.createFailureResponse("Can not add type - board does not exist");
+        }
+        Board newBoard = board.get();
+        //todo check if type does not exists then return failure response
+        newBoard.removeType(type);
+        boardRepo.save(newBoard);
+        //todo live update
+        return Response.createSuccessfulResponse(type);
     }
 
     /**
@@ -162,11 +169,9 @@ public class BoardService {
     }
 
     //todo: check again
-    public Response<Type> typeExistsInBoard(Board board, long typeId){
-        Optional<Type> typeExist = typeRepo.findById(typeId);
-
-        return typeExist.isPresent() && board.equals(typeExist.get().getBoard()) ?
-                Response.createSuccessfulResponse(typeExist.get()) : Response.createFailureResponse("Type does not exist");
+    public Response<String> typeExistsInBoard(Board board, String type){
+        return board.getTypes().contains(type) ? Response.createSuccessfulResponse(type)
+                : Response.createFailureResponse("Type does not exist");
     }
 
     public Response<String> statusExistsInBoard(Board board, String status){
@@ -175,35 +180,24 @@ public class BoardService {
                 : Response.createFailureResponse("Status does not exist");
     }
 
-    public Response<String> userExistsInBoard(Board board, User user){
-        Set<UserRoleInBoard> userRoleInBoardSet =board.getUserRoleInBoards();
-        if(userRoleInBoardSet.stream().anyMatch(userRoleInBoard -> userRoleInBoard.getUser().equals(user))){
-            return Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
-        }
+    public Response<UserRole> userExistsInBoard(Board board, User user){
 
-
-//        Optional<UserRoleInBoard> userRoleInBoard = userRoleInBoardRepo.findByUserAndBoard(user, board);
-//        if(!userRoleInBoard.isPresent()){
-//            return Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
-//        }
-        //todo
+        return board.getUserRoleInBoards().containsKey(user) ? Response.createSuccessfulResponse(board.getUserRoleInBoards().get(user)) :
+                Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
+    }
+//todo check validation
+    public Response<String> assignUserRole(long boardId, User user, UserRole role){
+        Board board = boardRepo.findById(boardId).get();
+        board.addUserRole(user, role);
+        boardRepo.save(board);
         return Response.createSuccessfulResponse("Success");
     }
 
-    public Response<UserRoleInBoard> assignUserRole(long boardId, User user, UserRole role){
+    public Response<String> removeUserRole(long boardId, User user){
         Board board = boardRepo.findById(boardId).get();
-        UserRoleInBoard userRoleInBoard = new UserRoleInBoard(user, role);
-        board.addUserRole(userRoleInBoard);
+        board.removeUserRole(user);
         boardRepo.save(board);
-        return Response.createSuccessfulResponse(userRoleInBoard);
-    }
-
-    public Response<UserRoleInBoard> removeUserRole(long boardId, User user, UserRole role){
-        Board board = boardRepo.findById(boardId).get();
-        UserRoleInBoard userRoleInBoard = new UserRoleInBoard(user, role);
-        board.removeUserRole(userRoleInBoard);
-        boardRepo.save(board);
-        return Response.createSuccessfulResponse(userRoleInBoard);
+        return Response.createSuccessfulResponse("Success");
     }
 
 
