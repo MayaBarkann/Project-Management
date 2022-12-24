@@ -10,7 +10,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Data
@@ -61,21 +60,6 @@ public class Board {
         return this.userRoleInBoards;
     }
 
-    public Set<Status> addStatus(Status status){
-        this.statuses.add(status);
-        return this.statuses;
-    }
-
-    public Set<Status> removeStatus(Status status){
-        this.statuses.remove(status);
-        return this.statuses;
-    }
-
-//    public Set<Status> removeStatusById(long statusId){
-////        Status status = this.statuses.stream().filter(s -> s.getId() == statusId).findFirst().orElse(null);
-//        this.statuses.remove(this.statuses.stream().filter(s -> s.getId() == statusId).findFirst().orElse(null));
-//        return this.statuses;
-//    }
 
 
 }

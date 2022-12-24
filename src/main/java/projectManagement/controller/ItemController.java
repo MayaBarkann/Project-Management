@@ -23,47 +23,26 @@ public class ItemController {
     @Autowired
     BoardService boardService;
 
-//    @PostMapping(value = "/create")
-//    public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
-//        if (item == null) {
-//            return ResponseEntity.badRequest().body("parameter could not be null");
-//        }
-//
-//        if (item.getBoardId() == null) {
-//            return ResponseEntity.badRequest().body("Board id could not be null");
-//        }
-//
-//        Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
-//        if (!optionalBoard.isPresent()) {
-//            return ResponseEntity.badRequest().body("Board not found");
-//        }
-//
-//        Optional<User> creator = userService.getUser(userId);
-//        if(!creator.isPresent()){
-//            return ResponseEntity.badRequest().body("User does not exist");
-//        }
-//        Response<Item> response = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
-//
-//        return response.isSucceed() ? ResponseEntity.ok().body("Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
-//    }
-
     @PostMapping(value = "/create")
-    public ResponseEntity<String> createItem(@RequestAttribute User user, @RequestParam long boardId, @RequestBody CreateItem item) {
+    public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
         if (item == null) {
             return ResponseEntity.badRequest().body("parameter could not be null");
         }
 
-        Optional<Board> optionalBoard = boardService.getBoardById(boardId);
+        if (item.getBoardId() == null) {
+            return ResponseEntity.badRequest().body("Board id could not be null");
+        }
+
+        Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
         if (!optionalBoard.isPresent()) {
             return ResponseEntity.badRequest().body("Board not found");
         }
 
-        Optional<Status> optionalStatus = boardService.getStatusById(optionalBoard.get(), item.getStatusId());
-        if (!optionalStatus.isPresent()) {
-            return ResponseEntity.badRequest().body("Status not found");
+        Optional<User> creator = userService.getUser(userId);
+        if(!creator.isPresent()){
+            return ResponseEntity.badRequest().body("User does not exist");
         }
-
-        Response<Item> response = itemService.createItem(item.getTitle(), optionalStatus.get(), user, optionalBoard.get());
+        Response<Item> response = itemService.createItem(item.getTitle(), item.getStatusId(), creator.get(), optionalBoard.get());
 
         return response.isSucceed() ? ResponseEntity.ok().body("Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }

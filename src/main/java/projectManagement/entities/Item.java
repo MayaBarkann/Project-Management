@@ -68,7 +68,6 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
 
-
 //    public Item(String title, Status status, ItemImportance importance, Type type, Item parent, Board board, User creator, User assignedToUser) {
 //        this.title = title;
 //        this.status = status;
