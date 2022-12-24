@@ -29,7 +29,7 @@ public class Item {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(nullable = false)
     @Column(nullable = false)
-    private String status = "";
+    private String status;
 
     @Enumerated(EnumType.STRING)
     private ItemImportance importance;
@@ -67,24 +67,6 @@ public class Item {
     @JsonIncludeProperties(value = {"id","comment"})
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
-
-//    public Item(String title, Status status, ItemImportance importance, Type type, Item parent, Board board, User creator, User assignedToUser) {
-//        this.title = title;
-//        this.status = status;
-//        this.importance = importance;
-//        this.type = type;
-//        this.parent = parent;
-//        this.board = board;
-//        this.creator = creator;
-//        this.assignedToUser = assignedToUser;
-//    }
-
-//    public Item(String title, Status status, Board board, User creator) {
-//        this.title = title;
-////        this.status = status;
-//        this.board = board;
-//        this.creator = creator;
-//    }
 
     public Item(String title, String status, Board board, User creator) {
         this.title = title;

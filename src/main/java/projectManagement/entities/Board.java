@@ -72,11 +72,12 @@ public class Board {
 
     public Set<String> removeStatus(String status){
         this.statuses.remove(status);
-        for (Item item: items) {
-            if(item.getStatus() != null && item.getStatus().equals(status)){
-                item.setStatus("");
-            }
-        }
+        items.removeIf(item -> item.getStatus().equals(status));
+//        for (Item item: items) {
+//            if(item.getStatus() != null && item.getStatus().equals(status)){
+//                item.setStatus("");
+//            }
+//        }
         return this.statuses;
     }
 
@@ -92,14 +93,8 @@ public class Board {
                 item.setType("");
             }
         }
-//        this.items.forEach(item -> {item.getType().equals(type) ? item.removeType() : item});
+
         return this.types;
     }
-
-//    Iterator<Entry<String, String>> iterator = foodItemTypeMap.entrySet().iterator();
-//        while (iterator.hasNext()) {
-//        if (iterator.next().getKey().equals("Carrot"))
-//            iterator.remove();
-//    }
 
 }
