@@ -1,5 +1,7 @@
 package projectManagement.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,6 +14,7 @@ import projectManagement.controller.entities.GithubEmail;
 import java.util.List;
 
 public class GitRequest {
+    private static Logger logger = LogManager.getLogger(GitRequest.class.getName());
 
 
     /**
@@ -21,15 +24,15 @@ public class GitRequest {
      * @return GitToken - access_token; token_type; scope
      */
     public static ResponseEntity<GitToken> reqGitGetToken(String link) {
-        ResponseEntity<GitToken> response = null;
+        logger.info("in GitRequest -> reqGitGetToken");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
-
         try {
             return restTemplate.exchange(link, HttpMethod.POST, entity, GitToken.class);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("in GitRequest -> reqGitGetToken -> failed to fetch token from link: " +link);
             return null;
         }
     }
@@ -44,7 +47,7 @@ public class GitRequest {
      * @return GitUser - login; name; email;
      */
     public static ResponseEntity<GitUser> reqGitGetUser(String link, String bearerToken) {
-        ResponseEntity<GitUser> response = null;
+        logger.info("in GitRequest -> reqGitGetUser");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + bearerToken);
@@ -53,6 +56,7 @@ public class GitRequest {
             GitUser gitUser = restTemplate.exchange(link, HttpMethod.GET, entity, GitUser.class).getBody();
             gitUser.accessToken = bearerToken;
             if (gitUser.getEmail() == null) {
+                logger.info("in GitRequest -> reqGitGetToken -> user is private in github.");
                 GithubEmail[] githubEmail = restTemplate.exchange(link + "/emails", HttpMethod.GET, entity, GithubEmail[].class).getBody();
                 for (GithubEmail gEmail : githubEmail) {
                     if (gEmail.isPrimary()) {
@@ -63,6 +67,7 @@ public class GitRequest {
             }
             return ResponseEntity.ok(gitUser);
         } catch (Exception e) {
+            logger.error("in GitRequest -> reqGitUser -> failed to fetch user from link: " +link);
             return null;
         }
     }

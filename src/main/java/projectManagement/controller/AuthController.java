@@ -1,6 +1,8 @@
 package projectManagement.controller;
 
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,22 +12,20 @@ import projectManagement.controller.entities.UserDTO;
 import projectManagement.controller.entities.UserLoginDTO;
 import projectManagement.controller.entities.UserRequest;
 import projectManagement.entities.Response;
-import projectManagement.entities.User;
 import projectManagement.service.AuthService;
 import projectManagement.utils.Validation;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
+
 
 @RequestMapping(value = "/auth")
 @AllArgsConstructor
 @CrossOrigin
 @RestController
 public class AuthController {
-    public AuthController() {
-    }
+    private static Logger logger = LogManager.getLogger(AuthController.class.getName());
+
+
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public void saveUser() {
@@ -35,47 +35,58 @@ public class AuthController {
     AuthService authService;
 
     /**
-     * Register controller
+     * Register function is responsible for creating new users and adding them to the database.
+     * Users will use their personal information to create a new account: email, password, name.
+     *
      * @param user - mail,password,name
      * @return l
      */
     @RequestMapping(value = "register", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserDTO>> register(@RequestBody UserRequest user) {
-        if(Validation.validateInputRegister(user)) {
+        logger.info("in AuthController -> register");
+        if (Validation.validateInputRegister(user)) {
             Response<UserDTO> response = authService.register(user);
             if (response.isSucceed()) {
                 return ResponseEntity.ok().body(response);
             }
         }
+        logger.error("in AuthController -> register -> Wrong input");
         return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
     }
 
     /**
-     * login controller
-     * @param user -
-     * @return -
+     * login controller, get an UserRequest with user login details. (email,password).
+     *
+     * @param user - (email,password)
+     * @return - UserLoginDTO => userId; token;
      */
     @RequestMapping(value = "login", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserLoginDTO>> login(@RequestBody UserRequest user) {
-        if(Validation.validateInputLogin(user)) {
+        logger.info("in AuthController -> login");
+        if (Validation.validateInputLogin(user)) {
             Response<UserLoginDTO> response = authService.login(user);
             if (response.isSucceed()) {
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         }
+        logger.error("in AuthController -> login -> Wrong input");
         return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
     }
 
     /**
-     * Github register
+     * GitHub register - after client authenticate with gitHub, he gets a code as a parameter.
+     * we send the parameter from the client to the controller to here.
+     * then we need to take 3 actions with this code to get the user email and name
+     *
      * @param code - after authorize we get a code as a param
-     * @return -
+     * @return - UserLoginDTO => userId; token;
      */
     @RequestMapping(method = RequestMethod.GET, path = "/loginGithub")
-    public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code){
+    public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code) {
+        logger.info("in AuthController -> loginGithub");
         Response<UserLoginDTO> response = authService.loginGithub(code);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("http://localhost:3000"));
-        return new ResponseEntity<Response<UserLoginDTO>>(response,headers,HttpStatus.MOVED_PERMANENTLY);
+        return new ResponseEntity<>(response, headers, HttpStatus.MOVED_PERMANENTLY);
     }
 }

@@ -4,6 +4,8 @@ import javax.security.auth.login.AccountNotFoundException;
 
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class AuthService {
+    private static Logger logger = LogManager.getLogger(AuthService.class.getName());
 
     @Autowired
     UserRepo userRepo;
@@ -38,17 +41,17 @@ public class AuthService {
      * @return Response with UserDTO - email, password, name.
      */
     public Response<UserDTO> register(UserRequest user) {
+        logger.info("in AuthService -> register");
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
+            logger.error("in AuthService -> register -> fail: user already exist" + user.getEmail());
             return Response.createFailureResponse("user already exist");
         }
         try {
             return Response.createSuccessfulResponse(createUser(user, Provider.LOCAL));
         } catch (Exception e) {
+            logger.error("in AuthService -> register -> Failed during creation");
             return Response.createFailureResponse("Failed during creation");
         }
-    }
-
-    public AuthService() {
     }
 
     public void save(User user) {
@@ -63,12 +66,15 @@ public class AuthService {
      * @return Response with UserLoginDTO - userId and token.
      */
     public Response<UserLoginDTO> login(UserRequest user) {
+        logger.info("in AuthService -> login");
         Optional<User> optUser = userRepo.findByEmail(user.getEmail());
         if (!optUser.isPresent()) {
-            return Response.createFailureResponse("user already exist");
+            logger.error("in AuthService -> login -> fail: user with this email do not exist" + user.getEmail());
+            return Response.createFailureResponse("user with this email do not exist" + user.getEmail());
         }
         if (optUser.get().getProvider() == Provider.LOCAL) {
             if (!optUser.get().getPassword().equals(user.getPassword())) {
+                logger.error("in AuthService -> login -> fail: password do not match");
                 return Response.createFailureResponse("password do not match");
             }
         }
@@ -83,12 +89,17 @@ public class AuthService {
      * @return - long userId
      * @throws AccountNotFoundException - throw not found an account with this id.
      */
-    public Long checkTokenToUserInDB(String token) throws AccountNotFoundException,IllegalAccessError {
+    public Long checkTokenToUserInDB(String token) throws AccountNotFoundException, IllegalAccessError {
+        logger.info("in AuthService -> checkTokenToUserInDB");
         Claims claims = Token.decodeJWT(token);
-        if(claims==null) throw new IllegalAccessError("Wrong token input");
+        if (claims == null) {
+            logger.error("in AuthService -> checkTokenToUserInDB -> fail: cannot decode token" + token);
+            throw new IllegalAccessError("Wrong token input");
+        }
         long userId = Long.parseLong(claims.getId());
         Optional<User> user = getUser(userId);
         if (!user.isPresent()) {
+            logger.error("in AuthService -> checkTokenToUserInDB -> fail: no id in DB");
             throw new AccountNotFoundException("no id in DB");
         }
         return userId;
@@ -117,25 +128,27 @@ public class AuthService {
      * @return - Response with UserLoginDTO - new userId and token.
      */
     public Response<UserLoginDTO> loginGithub(String code) {
+        logger.info("in AuthService -> loginGithub");
         GitUser githubUser = getGithubUser(code);
         try {
             if (githubUser != null) {
                 if (githubUser.getEmail() != null) {
                     if (!userRepo.findByEmail(githubUser.getEmail()).isPresent()) {
+                        logger.info("in AuthService -> loginGithub -> new login via github account");
                         if (githubUser.getName() != "" && githubUser.getName() != null) {
-                            UserDTO userCreated = createUser(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken(), githubUser.getName()), Provider.GITHUB);
+                            createUser(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken(), githubUser.getName()), Provider.GITHUB);
                         } else {
-                            UserDTO userCreated = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
+                            createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
                         }
                     }
                     return login(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken()));
-                } else {
-
                 }
             }
-            return Response.createFailureResponse("user already exist");
-        } catch (SQLDataException e) {
-            return Response.createFailureResponse("user already exist");
+            logger.error("in AuthService -> loginGithub -> cannot get user from code: getGithubUser(code)");
+            return Response.createFailureResponse("Invalid code");
+        } catch (IllegalArgumentException e) {
+            logger.error("in AuthService -> loginGithub -> cannot get user from code: getGithubUser(code)");
+            return Response.createFailureResponse("Email already exists!");
         }
     }
 
@@ -147,7 +160,8 @@ public class AuthService {
      * @param code - the parameter after authorization from client.
      * @return
      */
-    public ResponseEntity<GitToken> getGithubToken(String code) {
+    ResponseEntity<GitToken> getGithubToken(String code) {
+        logger.info("in AuthService -> getGithubToken");
         String baseLink = "https://github.com/login/oauth/access_token?";
         String clientId = env.getProperty("spring.security.oauth2.client.registration.github.client-id");
         String clientSecret = env.getProperty("spring.security.oauth2.client.registration.github.client-secret");
@@ -162,7 +176,8 @@ public class AuthService {
      * @param code - code as a parameter, to get the token.
      * @return GitUser login; name; email; accessToken;
      */
-    public GitUser getGithubUser(String code) {
+    GitUser getGithubUser(String code) {
+        logger.info("in AuthService -> getGithubToken");
         ResponseEntity<GitToken> gitTokenResponse = getGithubToken(code);
         if (gitTokenResponse != null) {
             try {
@@ -170,23 +185,27 @@ public class AuthService {
                 String linkGetUser = "https://api.github.com/user";
                 return GitRequest.reqGitGetUser(linkGetUser, token).getBody();
             } catch (NullPointerException e) {
+                logger.error("in AuthService -> getGithubUser -> cannot get user from code"+e.getMessage());
                 return null;
             }
         }
+        logger.error("in AuthService -> getGithubUser -> cannot get user from code");
         return null;
     }
 
     /**
      * Create user if email isn't already exist
      *
-     * @param user     -
-     * @param provider -
-     * @return -
-     * @throws SQLDataException -
+     * @param user     - user info: email,password,name.
+     * @param provider - Local or Github.
+     * @return - id; name; email;
+     * @throws IllegalArgumentException - email already exist in DB.
      */
-    public UserDTO createUser(UserRequest user, Provider provider) throws SQLDataException {
+    public UserDTO createUser(UserRequest user, Provider provider) throws IllegalArgumentException {
+        logger.info("in AuthService -> createUser");
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
-            throw new SQLDataException(String.format("Email %s already exists!", user.getEmail()));
+            logger.error("in AuthService -> createUser -> Email "+ user.getEmail()+" already exists!");
+            throw new IllegalArgumentException(String.format("Email %s already exists!", user.getEmail()));
         }
         //todo: add init notification
         return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), user.getPassword(), provider)));
