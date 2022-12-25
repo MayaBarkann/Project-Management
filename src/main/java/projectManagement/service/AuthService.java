@@ -45,6 +45,12 @@ public class AuthService {
         }
         return false;
     }
+    public void addTokenToUser(long userId, String token) {
+        userToToken.put(userId, token);
+    }
+    public void removeTokenToUser(long userId) {
+        userToToken.remove(userId);
+    }
 
 
     /**
@@ -73,9 +79,6 @@ public class AuthService {
         userRepo.save(user);
     }
 
-    public void addTokenToUser(long userId, String token) {
-        userToToken.put(userId, token);
-    }
 
     /**
      * login service, check if we have the user id DB,
