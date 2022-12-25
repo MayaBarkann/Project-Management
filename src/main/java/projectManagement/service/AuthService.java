@@ -160,6 +160,8 @@ public class AuthService {
                     UserDTO user = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
                     if (githubUser.getName() != "" && githubUser.getName() != null) {
                         user.setName(githubUser.getName());
+                    }else {
+                        user.setName(githubUser.getEmail());
                     }
                     String token = generateToken(user.getId());
                     addTokenToUser(user.getId(), token);
