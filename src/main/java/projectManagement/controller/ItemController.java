@@ -179,7 +179,7 @@ public class ItemController {
      * @param commentStr
      * @return
      */
-    @PutMapping("/add-comment")
+    @PostMapping("/add-comment")
     public ResponseEntity<String> addComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
         Optional<User> user = userService.getUser(userId);
         if(!user.isPresent()){
@@ -210,20 +210,12 @@ public class ItemController {
     }
 
 
-//    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
-//    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
-//
-//        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//
-//        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
+    @PutMapping("update-importance")
+    public ResponseEntity<String> updateItemImportance(@RequestParam long itemId, @RequestParam long boardId, @RequestBody ItemImportance importance){
+        Response<Item> response = itemService.updateImportance(itemId, importance);
+
+        return response.isSucceed() ? ResponseEntity.ok("Item's importance was updated successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
 
 
 }

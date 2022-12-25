@@ -168,6 +168,22 @@ public class ItemService {
 
     }
 
+    public Response<Item> updateImportance(long itemId, ItemImportance importance){
+        if (importance == null) {
+            return Response.createFailureResponse("can not update item importance");
+        }
+
+        Optional<Item> optionalItem = itemRepo.findById(itemId);
+        if(!optionalItem.isPresent()){
+            return Response.createFailureResponse("can not update item importance- item does not exist");
+        }
+
+        Item item = optionalItem.get();
+        item.setImportance(importance);
+
+        return Response.createSuccessfulResponse(itemRepo.save(item));
+    }
+
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }
