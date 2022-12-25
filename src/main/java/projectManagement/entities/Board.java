@@ -1,6 +1,7 @@
 package projectManagement.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Data;
 import lombok.Getter;

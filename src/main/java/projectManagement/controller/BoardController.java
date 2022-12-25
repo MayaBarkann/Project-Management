@@ -128,11 +128,14 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
-    @GetMapping(value = "/get")
-    public ResponseEntity<Response<Board>> getItems(@RequestParam long boardId) {
+    @GetMapping(value = "/get-board")
+    public ResponseEntity<Board> getBoard(@RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(boardId);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        if(response.isSucceed()){
+
+        }
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getData()) : ResponseEntity.badRequest().body(null);
     }
 
     @PostMapping(value = "/assign-role-to-user")
