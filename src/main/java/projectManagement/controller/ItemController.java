@@ -8,7 +8,7 @@ import projectManagement.controller.entities.*;
 import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
-import projectManagement.service.UserService;
+import projectManagement.service.AuthService;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,7 @@ public class ItemController {
     @Autowired
     ItemService itemService;
     @Autowired
-    UserService userService;
+    AuthService userService;
     @Autowired
     BoardService boardService;
 
