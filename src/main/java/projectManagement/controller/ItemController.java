@@ -117,29 +117,27 @@ public class ItemController {
     }
 
     //todo
-//    @PutMapping("/change-assign-to-user")
-//    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
-//        Optional<User> assignedUser = userService.getUser(userId);
-//
-//        if(!assignedUser.isPresent()){
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
-//        }
-//
-//        Optional<Item> item = itemService.getItem(itemId);
-//        if(!item.isPresent()){
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
-//        }
-//
-//        Response<String> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
-//
-//        if(!userRoleInBoardResponse.isSucceed()){
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
-//        }
-//
-//        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
-//
-//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-//    }
+    @PutMapping("/change-assign-to-user")
+    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
+        Optional<User> assignedUser = userService.getUser(userId);
+        if(!assignedUser.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
+        }
+
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
+        }
+
+        Response<UserRole> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
+        if(!userRoleInBoardResponse.isSucceed()){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
+        }
+
+        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
 
 
     @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
@@ -181,8 +179,8 @@ public class ItemController {
      * @param commentStr
      * @return
      */
-    @PutMapping("/add-comment")
-    public ResponseEntity<String> addComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
+    @PostMapping("/add-comment")
+    public ResponseEntity<String> addComment(@RequestParam long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
         Optional<User> user = userService.getUser(userId);
         if(!user.isPresent()){
             return ResponseEntity.badRequest().body("User does exist");
@@ -212,20 +210,12 @@ public class ItemController {
     }
 
 
-//    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
-//    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
-//
-//        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-//        }
-//
-//        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
+    @PutMapping("update-importance")
+    public ResponseEntity<String> updateItemImportance(@RequestParam long itemId, @RequestParam long boardId, @RequestBody ItemImportance importance){
+        Response<Item> response = itemService.updateImportance(itemId, importance);
+
+        return response.isSucceed() ? ResponseEntity.ok("Item's importance was updated successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
 
 
 }
