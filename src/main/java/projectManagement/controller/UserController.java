@@ -3,12 +3,14 @@ package projectManagement.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import projectManagement.controller.entities.UserRequest;
 import projectManagement.entities.Response;
 import projectManagement.entities.User;
 import projectManagement.service.UserService;
@@ -43,8 +45,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @RequestMapping(value = "register", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity<Response> register(@RequestBody User user) {
+    @RequestMapping(value = "register", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> register(@RequestBody UserRequest user1) {
+        User user = new User(user1.getName(), user1.getEmail(), user1.getPassword());
         if(Validation.validateInputRegister(user)) {
             Response<User> response = userService.register(user);
             if (response.isSucceed()) {

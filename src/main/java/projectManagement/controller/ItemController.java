@@ -1,5 +1,6 @@
 package projectManagement.controller;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,161 +24,123 @@ public class ItemController {
     @Autowired
     BoardService boardService;
 
-    public ItemController() {
-    }
-
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<Response<Item>> createItem(@RequestBody CreateItemDTO item) {
+    @PostMapping(value = "/create")
+    public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
         if (item == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-        if (item.boardId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board id could not be null"));
+            return ResponseEntity.badRequest().body("parameter could not be null");
         }
 
-        Optional<Board> optionalBoard = boardService.getBoardById(item.boardId);
+        if (item.getBoardId() == null) {
+            return ResponseEntity.badRequest().body("Board id could not be null");
+        }
+
+        Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
         if (!optionalBoard.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board not found"));
-        }
-        Board board = optionalBoard.get();
-
-        if (item.creatorId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("user creator id could not be null"));
-
+            return ResponseEntity.badRequest().body("Board not found");
         }
 
-        Optional<User> optionalCreator = userService.getUser(item.creatorId);
-        if (!optionalCreator.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("user creator not found"));
-        }
-        User creator = optionalCreator.get();
-
-        User assignedToUser = null;
-        if (item.assignedToUserId != null) {
-            Optional<User> optionalAssignedToUser = userService.getUser(item.assignedToUserId);
-            if (!optionalAssignedToUser.isPresent()) {
-                return ResponseEntity.badRequest().body(Response.createFailureResponse("user assignedTo not found"));
-            }
-            assignedToUser = optionalAssignedToUser.get();
-
-        }
-        Item parentItem = null;
-        if (item.parentId != null) {
-            Optional<Item> optionalParentItem = itemService.getItem(item.parentId);
-            if (!optionalParentItem.isPresent()) {
-                return ResponseEntity.badRequest().body(Response.createFailureResponse("item parent not found"));
-            }
-            parentItem = optionalParentItem.get();
-
+        Optional<User> creator = userService.getUser(userId);
+        if(!creator.isPresent()){
+            return ResponseEntity.badRequest().body("User does not exist");
         }
 
-
-        Response<Item> res = itemService.createItem(item, creator, board, assignedToUser, parentItem);
-
-        if (res.isSucceed()) {
-            return ResponseEntity.ok().body(res);
-        } else {
-            return ResponseEntity.badRequest().body(res);
+        Response<String> responseStatus = boardService.statusExistsInBoard(optionalBoard.get(), item.getStatus());
+        if (!responseStatus.isSucceed()){
+            return ResponseEntity.badRequest().body(responseStatus.getMessage());
         }
 
-
-    }
-
-    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<Response<Long>> deleteItem(@RequestBody ItemIdDTO deleteItemId) {
-
-        if (deleteItemId == null || deleteItemId.itemId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Long itemId = deleteItemId.itemId;
-        Response<Long> response = itemService.deleteItem(itemId);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
+        itemService.createItem(item.getTitle(), item.getStatus(), creator.get(), optionalBoard.get());
+//todo: add live update
+        return ResponseEntity.ok().body("Item was created successfully");
     }
 
 
-    @RequestMapping(value = "/changeType", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> addItemType(@RequestBody AddItemType addItemType) {
+    @DeleteMapping(value = "/delete")
+    public ResponseEntity<String> deleteItem(@RequestParam long itemId) {
+        Response<Item> response = itemService.deleteItem(itemId);
 
-        if (addItemType == null || addItemType.itemId == null || addItemType.type == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+        return response.isSucceed() ? ResponseEntity.ok().body("Item was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
+
+    @PutMapping("/change-type")
+    public  ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody String type){
+        if(type == null){
+            return ResponseEntity.badRequest().body("Can not update type - type is null");
         }
 
-        Response<Item> response = itemService.changeType(addItemType);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body("Can not update type - Item does not exist");
         }
 
+        Response<String> responseType = boardService.typeExistsInBoard(item.get().getBoard(),type);
+
+        if (!responseType.isSucceed()){
+            return ResponseEntity.badRequest().body(responseType.getMessage());
+        }
+
+        Response<Item> response = itemService.changeType(itemId, type);
+
+        return response.isSucceed() ? ResponseEntity.ok().body("Type changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
+
+    @PutMapping("/change-status")
+    public  ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody String status) {
+        Optional<Item> item = itemService.getItem(itemId);
+        if(!item.isPresent()){
+            return ResponseEntity.badRequest().body("Can not update status - Item does not exist");
+        }
+
+        if(!boardService.statusExistsInBoard(item.get().getBoard(), status).isSucceed()){
+            return ResponseEntity.badRequest().body("Status does not exist in board");
+        }
+
+        Response<Item> response = itemService.changeStatus(itemId, status);
+
+        return response.isSucceed() ? ResponseEntity.ok().body("Status changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
+    /**
+     *
+     * @param itemId
+     * @param description
+     * @return
+     */
+    @PutMapping("/change-description")
+    public ResponseEntity<String> changeItemDescription(@RequestParam long itemId, @RequestBody String description){
+        Response<Item> response = itemService.changeDescription(itemId, description);
+
+        return response.isSucceed() ? ResponseEntity.ok().body("Description has changed successfully") : ResponseEntity.badRequest().body(response.getMessage());
 
     }
 
-    @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeItemStatus(@RequestBody ChangeStatusDTO changeStatusDTO) {
+    //todo
+//    @PutMapping("/change-assign-to-user")
+//    public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId){
+//        Optional<User> assignedUser = userService.getUser(userId);
+//
+//        if(!assignedUser.isPresent()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("User does not exist"));
+//        }
+//
+//        Optional<Item> item = itemService.getItem(itemId);
+//        if(!item.isPresent()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Item does not exist"));
+//        }
+//
+//        Response<String> userRoleInBoardResponse = boardService.userExistsInBoard(item.get().getBoard(), assignedUser.get());
+//
+//        if(!userRoleInBoardResponse.isSucceed()){
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse(userRoleInBoardResponse.getMessage()));
+//        }
+//
+//        Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get());
+//
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+//    }
 
-        if (changeStatusDTO == null || changeStatusDTO.itemId == null || changeStatusDTO.newStatus == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Response<Item> response = itemService.changeStatus(changeStatusDTO);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
-
-    @RequestMapping(value = "/changeDescription", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeItemDescription(@RequestBody ChangeDescriptionDTO changeDescriptionDTO) {
-
-        if (changeDescriptionDTO == null || changeDescriptionDTO.itemId == null || changeDescriptionDTO.description == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Response<Item> response = itemService.changeDescription(changeDescriptionDTO);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
-
-    @RequestMapping(value = "/assignToUser", method = RequestMethod.PUT)
-    public ResponseEntity<Response<Item>> changeAssignedToUser(@RequestBody AssignToUserDTO assignToUserDTO) {
-
-        if (assignToUserDTO == null || assignToUserDTO.itemId == null || assignToUserDTO.assignedToId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
-
-        Optional<User> foundUser = userService.getUser(assignToUserDTO.assignedToId);
-        if (!foundUser.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the assigned to user could not be found"));
-        }
-        User assignedToUser = foundUser.get();
-        Response<Item> response = itemService.changeAssignedToUser(assignToUserDTO.itemId, assignedToUser);
-
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
 
     @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
     public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {
@@ -210,50 +173,59 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/addComment", method = RequestMethod.POST)
-    public ResponseEntity<Response<Comment>> addComment(@RequestBody CommentDTO commentDTO) {
-
-        if (commentDTO == null || commentDTO.userId == null || commentDTO.itemId == null || commentDTO.comment == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+    /**
+     *
+     * @param userId
+     * @param boardId
+     * @param itemId
+     * @param commentStr
+     * @return
+     */
+    @PutMapping("/add-comment")
+    public ResponseEntity<String> addComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
+        Optional<User> user = userService.getUser(userId);
+        if(!user.isPresent()){
+            return ResponseEntity.badRequest().body("User does exist");
         }
-
-
-        Optional<User> userFound = userService.getUser(commentDTO.userId);
-        if (!userFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the commented user could not be found"));
-        }
-        User user = userFound.get();
-
-        Optional<Item> itemFound = itemService.getItem(commentDTO.itemId);
-        if (!itemFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the item you want to comment on could not be found"));
-        }
-        Item item = itemFound.get();
-
-        Response<Comment> response = itemService.addComment(item, user, commentDTO.comment);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
+        Response<Item> response = itemService.addComment(itemId, boardId ,user.get(), commentStr );
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok().body("Added comment successfully") : ResponseEntity.badRequest().body(response.getMessage());
 
     }
 
-    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
-    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
-
-        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+    /**
+     *
+     * @param userId
+     * @param boardId
+     * @param commentId
+     * @return
+     */
+    @DeleteMapping("delete-comment")
+    public ResponseEntity<String> deleteComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestBody long commentId){
+        Optional<User> user = userService.getUser(userId);
+        if(!user.isPresent()){
+            return ResponseEntity.badRequest().body("User does not exist");
         }
-
-        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
+        Response<Item> response = itemService.deleteComment(boardId ,user.get(), commentId);
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok().body("Comment was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
+
+
+//    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
+//    public ResponseEntity<Response<Long>> deleteComment(@RequestBody DeleteCommentDTO deleteCommentDTO) {
+//
+//        if (deleteCommentDTO == null || deleteCommentDTO.commentId == null) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+//        }
+//
+//        Response<Long> response = itemService.deleteComment(deleteCommentDTO.commentId);
+//        if (response.isSucceed()) {
+//            return ResponseEntity.ok().body(response);
+//        } else {
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//    }
+
+
 }
