@@ -180,7 +180,7 @@ public class ItemController {
      * @return
      */
     @PostMapping("/add-comment")
-    public ResponseEntity<String> addComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
+    public ResponseEntity<String> addComment(@RequestParam long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr){
         Optional<User> user = userService.getUser(userId);
         if(!user.isPresent()){
             return ResponseEntity.badRequest().body("User does exist");

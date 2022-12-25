@@ -135,7 +135,7 @@ public class BoardController {
         if(response.isSucceed()){
             return ResponseEntity.ok().body(BoardDTO.createBoardDTOFromBoard(response.getData()));
         }
-        
+
         return ResponseEntity.badRequest().body(null);
     }
 
