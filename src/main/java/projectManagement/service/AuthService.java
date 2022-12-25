@@ -69,8 +69,8 @@ public class AuthService {
         logger.info("in AuthService -> login");
         Optional<User> optUser = userRepo.findByEmail(user.getEmail());
         if (!optUser.isPresent()) {
-            logger.error("in AuthService -> login -> fail: user with this email do not exist" + user.getEmail());
-            return Response.createFailureResponse("user with this email do not exist" + user.getEmail());
+            logger.error("in AuthService -> login -> fail: user with this email do not exist: " + user.getEmail());
+            return Response.createFailureResponse("user with this email do not exist: " + user.getEmail());
         }
         if (optUser.get().getProvider() == Provider.LOCAL) {
             if (!optUser.get().getPassword().equals(user.getPassword())) {
