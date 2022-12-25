@@ -8,18 +8,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import projectManagement.service.UserService;
+import projectManagement.service.AuthService;
+import projectManagement.utils.GitRequest;
 
 @Component
 @Order(0)
 public class TokenFilter extends GenericFilterBean{
+    private static Logger logger = LogManager.getLogger(TokenFilter.class.getName());
+
     @Autowired
-    UserService userService;
+    AuthService userService;
+
     /**
      * this doFilter function is set to check if the user has the permission to enter the app controllers.
      * checks if the request was according to what we need with token in the authorization Header.
@@ -30,41 +36,33 @@ public class TokenFilter extends GenericFilterBean{
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        System.out.println("in Token filter");
         String url = ((HttpServletRequest) request).getRequestURL().toString();
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-
         if (!url.contains("auth") && !url.contains("ws") && !url.contains("error") && !httpRequest.getMethod().equals(HttpMethod.OPTIONS.toString())) {
-
             if (httpRequest.getHeader("authorization") != null) {
                 String token = httpRequest.getHeader("authorization");
                 if (token == null) {
-//                    logger.error("in AuthorizationFilter -> doFilter -> token is null");
+                    logger.error("in AuthorizationFilter -> doFilter -> token is null");
                     ((HttpServletResponse) response).setStatus(400);
-//                    response.getOutputStream().write(ExceptionMessage.TOKEN_IS_NULL.toString().getBytes());
+                    response.getOutputStream().write("token is null".getBytes());
                     return;
                 }
                 try {
-                    System.out.println(token);
-                    Long userId = userService.checkTokenToUserInDB(token);
-                    request.setAttribute("userId", userId);
-                    System.out.println("token is:" +userId);
-                    System.out.println("token is:" +userId);
-                    System.out.println("token is:" +userId);
-
-                } catch (AccountNotFoundException e) {
-//                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
+                    Long userId = userService.checkTokenToUserInDB(token.substring(7));
+                    request.setAttribute("User", userService.getUser(userId));
+                } catch (AccountNotFoundException | IllegalAccessError e) {
+                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
                     //Servers send 404 instead of 403 Forbidden to hide the existence
                     // of a resource from an unauthorized client.
                     ((HttpServletResponse) response).setStatus(404);
-//                    response.getOutputStream().write(ExceptionMessage.NO_USER_IN_DATABASE.toString().getBytes());
+                    response.getOutputStream().write(e.getMessage().getBytes());
                     return;
                 }
             } else {
-//                logger.error("in AuthorizationFilter -> doFilter -> Could not find a token in the request");
+                logger.error("in AuthorizationFilter -> doFilter -> Could not find a token in the request");
                 ((HttpServletResponse) response).setStatus(400);
-//                response.getOutputStream().write(ExceptionMessage.WRONG_SEARCH.toString().getBytes());
+                response.getOutputStream().write("Something in the request wasn't properly written, try again".getBytes());
                 return;
             }
         }
