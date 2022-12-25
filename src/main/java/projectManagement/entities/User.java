@@ -1,19 +1,16 @@
 package projectManagement.entities;
 
-import javax.persistence.*;
-import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import projectManagement.utils.Provider;
-
 import javax.persistence.*;
 import java.util.Objects;
+
 @Entity
 @Getter
 @NoArgsConstructor
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,33 +18,35 @@ public class User {
 
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false, unique = true)
     private String email;
+
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
-    public Provider getProvider() {
-        return provider;
-    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
     public void setProvider(Provider provider) {
         this.provider = provider;
     }
 
 
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Board> boards;
+//    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Board> boards;
 
-    @OneToMany(mappedBy = "assignedToUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Item> assignedItems;
+//    @OneToMany(mappedBy = "assignedToUser", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Item> assignedItems;
 
-    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Item> ItemsCreated;
+//    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Item> ItemsCreated;
 
-    @OneToMany(mappedBy = "commentedUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Comment> commentedUsers;
+//    @OneToMany(mappedBy = "commentedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Comment> commentedUsers;
 
     public User(String name, String email, String password) {
         this.name = name;
@@ -61,15 +60,6 @@ public class User {
         user.password = password;
         user.provider = provider;
         return user;
-    }
-
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setUserName(String name) {
-        this.name = name;
     }
 
     @Override

@@ -3,26 +3,21 @@ package projectManagement.controller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.AddUserRoleDTO;
-import projectManagement.controller.entities.CommentDTO;
+import projectManagement.controller.entities.BoardDTO;
 import projectManagement.controller.entities.FilterItemDTO;
-import projectManagement.controller.entities.StatusDTO;
-import projectManagement.entities.*;
-//import projectManagement.repository.StatusRepo;
-//import projectManagement.repository.TypeRepo;
+import projectManagement.entities.Board;
+import projectManagement.entities.Item;
+import projectManagement.entities.Response;
+import projectManagement.entities.User;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
-import projectManagement.utils.Validation;
-
-import javax.swing.text.html.Option;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
 
 @RequestMapping(value = "/board")
 @RestController
@@ -103,7 +98,7 @@ public class BoardController {
      * @return response entity with successful response containing the new Status created if the given board exists,
      * otherwise returns bad request containing failure Response with the reason for failure.
      */
-    //todo: add live changes with sockets?
+
     @PostMapping("/add-status")
     public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status){
         Response<String> response = boardService.addStatus(boardId, status);
@@ -134,28 +129,32 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
-    @GetMapping(value = "/get")
-    public ResponseEntity<Response<Board>> getItems(@RequestParam long boardId) {
+    @GetMapping(value = "/get-board")
+    public ResponseEntity<BoardDTO> getBoard(@RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(boardId);
+        if(response.isSucceed()){
+            return ResponseEntity.ok().body(BoardDTO.createBoardDTOFromBoard(response.getData()));
+        }
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+        return ResponseEntity.badRequest().body(null);
     }
 
-//    @PostMapping(value = "/assign-role-to-user")
-//    public ResponseEntity<Response<UserRoleInBoard>> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
-////        Response<Board> response = boardService.getBoard(boardId);
-//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
-//        Response<UserRoleInBoard> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
-//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-//    }
-//
+    @PostMapping(value = "/assign-role-to-user")
+    public ResponseEntity<String> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+//        Response<Board> response = boardService.getBoard(boardId);
+        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+        if(!user.isPresent()){
+            return ResponseEntity.badRequest().body("Can not assign role to user - user does not exist");
+        }
+        Response<String> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
 //    @DeleteMapping(value = "/remove-user-role")
 //    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
 //        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
 //        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
 //        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
 //    }
-
-
 
 }
