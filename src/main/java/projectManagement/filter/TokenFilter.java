@@ -45,12 +45,12 @@ public class TokenFilter extends GenericFilterBean{
                 try {
                     Long userId = userService.checkTokenToUserInDB(token.substring(7));
                     request.setAttribute("User", userService.getUser(userId));
-                } catch (AccountNotFoundException e) {
+                } catch (AccountNotFoundException | IllegalAccessError e) {
 //                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
                     //Servers send 404 instead of 403 Forbidden to hide the existence
                     // of a resource from an unauthorized client.
                     ((HttpServletResponse) response).setStatus(404);
-//                    response.getOutputStream().write(ExceptionMessage.NO_USER_IN_DATABASE.toString().getBytes());
+                    response.getOutputStream().write(e.getMessage().getBytes());
                     return;
                 }
             } else {

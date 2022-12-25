@@ -2,7 +2,7 @@ package projectManagement.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.ChangeStatusDTO;
+//import projectManagement.controller.entities.ChangeStatusDTO;
 import projectManagement.entities.Item;
 import projectManagement.entities.Response;
 import projectManagement.utils.Email;

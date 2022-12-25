@@ -1,9 +1,6 @@
 package projectManagement.utils;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,9 +38,13 @@ public class Token {
     }
 
     public static Claims decodeJWT(String jwt) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
-                .parseClaimsJws(jwt).getBody();
-        return claims;
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+                    .parseClaimsJws(jwt).getBody();
+            return claims;
+        }catch (MalformedJwtException e){
+            return null;
+        }
     }
 }

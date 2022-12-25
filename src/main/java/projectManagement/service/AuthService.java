@@ -83,8 +83,9 @@ public class AuthService {
      * @return - long userId
      * @throws AccountNotFoundException - throw not found an account with this id.
      */
-    public Long checkTokenToUserInDB(String token) throws AccountNotFoundException {
+    public Long checkTokenToUserInDB(String token) throws AccountNotFoundException,IllegalAccessError {
         Claims claims = Token.decodeJWT(token);
+        if(claims==null) throw new IllegalAccessError("Wrong token input");
         long userId = Long.parseLong(claims.getId());
         Optional<User> user = getUser(userId);
         if (!user.isPresent()) {
