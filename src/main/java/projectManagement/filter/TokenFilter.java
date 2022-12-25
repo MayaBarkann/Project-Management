@@ -16,7 +16,6 @@ import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import projectManagement.service.AuthService;
-import projectManagement.utils.GitRequest;
 
 @Component
 @Order(0)
@@ -24,7 +23,7 @@ public class TokenFilter extends GenericFilterBean{
     private static Logger logger = LogManager.getLogger(TokenFilter.class.getName());
 
     @Autowired
-    AuthService userService;
+    AuthService authService;
 
     /**
      * this doFilter function is set to check if the user has the permission to enter the app controllers.
@@ -40,8 +39,9 @@ public class TokenFilter extends GenericFilterBean{
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
         if (!url.contains("auth") && !url.contains("ws") && !url.contains("error") && !httpRequest.getMethod().equals(HttpMethod.OPTIONS.toString())) {
-            if (httpRequest.getHeader("authorization") != null) {
-                String token = httpRequest.getHeader("authorization");
+            if (httpRequest.getHeader("Authorization") != null) {
+                String token = httpRequest.getHeader("Authorization");
+                System.out.println(token);
                 if (token == null) {
                     logger.error("in AuthorizationFilter -> doFilter -> token is null");
                     ((HttpServletResponse) response).setStatus(400);
@@ -49,8 +49,15 @@ public class TokenFilter extends GenericFilterBean{
                     return;
                 }
                 try {
-                    Long userId = userService.checkTokenToUserInDB(token.substring(7));
-                    request.setAttribute("User", userService.getUser(userId));
+                    Long userId = authService.checkTokenToUserInDB(token);
+                    if(authService.checkTokenIsReal(userId,token)) {
+                        request.setAttribute("User", authService.getUser(userId));
+                    }else {
+                        logger.error("in AuthorizationFilter -> doFilter -> Invalid Token.");
+                        ((HttpServletResponse) response).setStatus(400);
+                        response.getOutputStream().write("Invalid Token".getBytes());
+                        return;
+                    }
                 } catch (AccountNotFoundException | IllegalAccessError e) {
                     logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
                     //Servers send 404 instead of 403 Forbidden to hide the existence

@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.*;
 import projectManagement.entities.Response;
@@ -20,6 +21,8 @@ import projectManagement.utils.Token;
 
 import java.sql.SQLDataException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -28,9 +31,21 @@ public class AuthService {
     private static Logger logger = LogManager.getLogger(AuthService.class.getName());
 
     @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
     UserRepo userRepo;
     @Autowired
     private Environment env;
+
+    Map<Long, String> userToToken = new HashMap<>();
+
+    public boolean checkTokenIsReal(long userId, String token) {
+        if (userToToken.containsKey(userId)) {
+            return this.userToToken.get(userId).equals(token);
+        }
+        return false;
+    }
+
 
     /**
      * register service, register was made from client.
@@ -58,6 +73,10 @@ public class AuthService {
         userRepo.save(user);
     }
 
+    public void addTokenToUser(long userId, String token) {
+        userToToken.put(userId, token);
+    }
+
     /**
      * login service, check if we have the user id DB,
      * if the provider is local check for password matching.
@@ -72,13 +91,17 @@ public class AuthService {
             logger.error("in AuthService -> login -> fail: user with this email do not exist: " + user.getEmail());
             return Response.createFailureResponse("user with this email do not exist: " + user.getEmail());
         }
-        if (optUser.get().getProvider() == Provider.LOCAL) {
-            if (!optUser.get().getPassword().equals(user.getPassword())) {
-                logger.error("in AuthService -> login -> fail: password do not match");
-                return Response.createFailureResponse("password do not match");
-            }
+        if (optUser.get().getProvider() == Provider.GITHUB) {
+            logger.error("in AuthService -> login -> fail: user with this email can only login via github: " + user.getEmail());
+            return Response.createFailureResponse("user with this email can only login via github: " + user.getEmail());
         }
-        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(), generateToken(optUser.get().getId())));
+        if (!bCryptPasswordEncoder.matches(user.getPassword(), optUser.get().getPassword())) {
+            logger.error("in AuthService -> login -> fail: password do not match");
+            return Response.createFailureResponse("password do not match");
+        }
+        String token = generateToken(optUser.get().getId());
+        addTokenToUser(optUser.get().getId(), token);
+        return Response.createSuccessfulResponse(new UserLoginDTO(optUser.get().getId(), token));
     }
 
     /**
@@ -131,17 +154,16 @@ public class AuthService {
         logger.info("in AuthService -> loginGithub");
         GitUser githubUser = getGithubUser(code);
         try {
-            if (githubUser != null) {
-                if (githubUser.getEmail() != null) {
-                    if (!userRepo.findByEmail(githubUser.getEmail()).isPresent()) {
-                        logger.info("in AuthService -> loginGithub -> new login via github account");
-                        if (githubUser.getName() != "" && githubUser.getName() != null) {
-                            createUser(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken(), githubUser.getName()), Provider.GITHUB);
-                        } else {
-                            createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
-                        }
+            if (githubUser != null && githubUser.getEmail() != null) {
+                if (!userRepo.findByEmail(githubUser.getEmail()).isPresent()) {
+                    logger.info("in AuthService -> loginGithub -> new login via github account");
+                    UserDTO user = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
+                    if (githubUser.getName() != "" && githubUser.getName() != null) {
+                        user.setName(githubUser.getName());
                     }
-                    return login(new UserRequest(githubUser.getEmail(), githubUser.getAccessToken()));
+                    String token = generateToken(user.getId());
+                    addTokenToUser(user.getId(), token);
+                    return Response.createSuccessfulResponse(new UserLoginDTO(user.getId(), token));
                 }
             }
             logger.error("in AuthService -> loginGithub -> cannot get user from code: getGithubUser(code)");
@@ -153,23 +175,6 @@ public class AuthService {
     }
 
     /**
-     * First request to gitHub authorization process
-     * we need to get the token authorization from <a href="https://github.com/login/oauth/access_token"></a>
-     * with our env.getProperty - github.client-id, github.client-secret.
-     *
-     * @param code - the parameter after authorization from client.
-     * @return
-     */
-    ResponseEntity<GitToken> getGithubToken(String code) {
-        logger.info("in AuthService -> getGithubToken");
-        String baseLink = "https://github.com/login/oauth/access_token?";
-        String clientId = env.getProperty("spring.security.oauth2.client.registration.github.client-id");
-        String clientSecret = env.getProperty("spring.security.oauth2.client.registration.github.client-secret");
-        String linkGetToken = baseLink + "client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code;
-        return GitRequest.reqGitGetToken(linkGetToken);
-    }
-
-    /**
      * the second call, we get the user info.
      * from <a href="https://api.github.com/user"></a>
      *
@@ -178,20 +183,38 @@ public class AuthService {
      */
     GitUser getGithubUser(String code) {
         logger.info("in AuthService -> getGithubToken");
-        ResponseEntity<GitToken> gitTokenResponse = getGithubToken(code);
+        GitToken gitTokenResponse = getGithubToken(code);
         if (gitTokenResponse != null) {
             try {
-                String token = gitTokenResponse.getBody().getAccess_token();
+                String token = gitTokenResponse.getAccess_token();
                 String linkGetUser = "https://api.github.com/user";
-                return GitRequest.reqGitGetUser(linkGetUser, token).getBody();
+                return GitRequest.reqGitGetUser(linkGetUser, token);
             } catch (NullPointerException e) {
-                logger.error("in AuthService -> getGithubUser -> cannot get user from code"+e.getMessage());
+                logger.error("in AuthService -> getGithubUser -> cannot get user from code" + e.getMessage());
                 return null;
             }
         }
         logger.error("in AuthService -> getGithubUser -> cannot get user from code");
         return null;
     }
+
+    /**
+     * First request to gitHub authorization process
+     * we need to get the token authorization from <a href="https://github.com/login/oauth/access_token"></a>
+     * with our env.getProperty - github.client-id, github.client-secret.
+     *
+     * @param code - the parameter after authorization from client.
+     * @return
+     */
+    GitToken getGithubToken(String code) {
+        logger.info("in AuthService -> getGithubToken");
+        String baseLink = "https://github.com/login/oauth/access_token?";
+        String clientId = env.getProperty("spring.security.oauth2.client.registration.github.client-id");
+        String clientSecret = env.getProperty("spring.security.oauth2.client.registration.github.client-secret");
+        String linkGetToken = baseLink + "client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code;
+        return GitRequest.reqGitGetToken(linkGetToken);
+    }
+
 
     /**
      * Create user if email isn't already exist
@@ -204,11 +227,11 @@ public class AuthService {
     public UserDTO createUser(UserRequest user, Provider provider) throws IllegalArgumentException {
         logger.info("in AuthService -> createUser");
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
-            logger.error("in AuthService -> createUser -> Email "+ user.getEmail()+" already exists!");
+            logger.error("in AuthService -> createUser -> Email " + user.getEmail() + " already exists!");
             throw new IllegalArgumentException(String.format("Email %s already exists!", user.getEmail()));
         }
         //todo: add init notification
-        return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), user.getPassword(), provider)));
+        return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), bCryptPasswordEncoder.encode(user.getPassword()), provider)));
     }
 
     /**
