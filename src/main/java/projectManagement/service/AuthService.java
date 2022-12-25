@@ -187,6 +187,7 @@ public class AuthService {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             throw new SQLDataException(String.format("Email %s already exists!", user.getEmail()));
         }
+        //todo: add init notification
         return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), user.getPassword(), provider)));
     }
 

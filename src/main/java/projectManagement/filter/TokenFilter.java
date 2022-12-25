@@ -44,7 +44,7 @@ public class TokenFilter extends GenericFilterBean{
                 }
                 try {
                     Long userId = userService.checkTokenToUserInDB(token.substring(7));
-                    request.setAttribute("userId", userId);
+                    request.setAttribute("User", userService.getUser(userId));
                 } catch (AccountNotFoundException e) {
 //                    logger.error("in AuthorizationFilter -> doFilter -> " + e.getMessage());
                     //Servers send 404 instead of 403 Forbidden to hide the existence

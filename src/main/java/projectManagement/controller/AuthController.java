@@ -76,7 +76,6 @@ public class AuthController {
         Response<UserLoginDTO> response = authService.loginGithub(code);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("http://localhost:3000"));
-        System.out.println("good luck");
         return new ResponseEntity<Response<UserLoginDTO>>(response,headers,HttpStatus.MOVED_PERMANENTLY);
     }
 }

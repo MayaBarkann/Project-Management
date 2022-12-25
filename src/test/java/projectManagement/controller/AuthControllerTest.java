@@ -88,6 +88,6 @@ class AuthControllerTest {
         headers.setLocation(URI.create("http://localhost:3000"));
         assertEquals(new ResponseEntity<Response<UserLoginDTO>>(Response.createFailureResponse(""),headers,HttpStatus.MOVED_PERMANENTLY).getStatusCode(),
                 authController.loginGithub("rany is the goat").getStatusCode(), "login with github bad code did not return createSuccessfulResponse");
-    }
+   }
 
 }
