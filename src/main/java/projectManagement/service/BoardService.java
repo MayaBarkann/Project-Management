@@ -148,16 +148,29 @@ public class BoardService {
     }
 
     public Response<UserRole> userExistsInBoard(Board board, User user){
+        if(board == null || !boardRepo.findById(board.getId()).isPresent()){
+            return Response.createFailureResponse("Board does not exist");
+        }
 
-        return board.getUserRoleInBoards().containsKey(user) ? Response.createSuccessfulResponse(board.getUserRoleInBoards().get(user)) :
-                Response.createFailureResponse("Can not assign this item to user - user does not exist in board");
+        UserRole userRole = board.getUserRoleInBoard(user);
+        return board.getUserRoleInBoard(user) != null ? Response.createSuccessfulResponse(userRole) :
+                Response.createFailureResponse("User does not exist in board");
     }
 //todo check validation
     public Response<String> assignUserRole(long boardId, User user, UserRole role){
-        Board board = boardRepo.findById(boardId).get();
+        Optional<Board> optionalBoard = boardRepo.findById(boardId);
+        if(!optionalBoard.isPresent()){
+            return Response.createFailureResponse("Can not assign user to board - board does not exist");
+        }
+
+        Board board = optionalBoard.get();
+        if(board.getAdmin().equals(user)){
+            return Response.createFailureResponse(String.format("%s is the admin (creator) of the board - can not change the role of this user", user.getName()));
+        }
         board.addUserRole(user, role);
         boardRepo.save(board);
-        return Response.createSuccessfulResponse("Success");
+
+        return Response.createSuccessfulResponse(String.format("Assigned role %s to user %s", role.name(), user.getName()));
     }
 
     public Response<String> removeUserRole(long boardId, User user){
