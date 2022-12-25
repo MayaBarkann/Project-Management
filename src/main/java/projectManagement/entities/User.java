@@ -1,18 +1,12 @@
 package projectManagement.entities;
 
-import javax.persistence.*;
-import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import projectManagement.utils.Provider;
-
 import javax.persistence.*;
 import java.util.Objects;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -67,13 +61,6 @@ public class User {
         user.provider = provider;
         return user;
     }
-
-
-
-//
-//    public void setUserName(String name) {
-//        this.name = name;
-//    }
 
     @Override
     public boolean equals(Object o) {

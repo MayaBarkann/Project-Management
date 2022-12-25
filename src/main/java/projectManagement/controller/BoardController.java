@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.AddUserRoleDTO;
+import projectManagement.controller.entities.BoardDTO;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
@@ -129,13 +130,13 @@ public class BoardController {
     }
 
     @GetMapping(value = "/get-board")
-    public ResponseEntity<Board> getBoard(@RequestParam long boardId) {
+    public ResponseEntity<BoardDTO> getBoard(@RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(boardId);
-
         if(response.isSucceed()){
-
+            return ResponseEntity.ok().body(BoardDTO.createBoardDTOFromBoard(response.getData()));
         }
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getData()) : ResponseEntity.badRequest().body(null);
+        
+        return ResponseEntity.badRequest().body(null);
     }
 
     @PostMapping(value = "/assign-role-to-user")

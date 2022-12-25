@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import projectManagement.controller.entities.BoardDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import java.util.Optional;
@@ -128,11 +129,8 @@ public class BoardService {
      */
     public Response<Board> getBoard(long boardId){
         Optional<Board> board = boardRepo.findById(boardId);
-        if(!board.isPresent()) {
-            return Response.createFailureResponse("Board does not exist");
-        }
 
-        return Response.createSuccessfulResponse(board.get());
+        return board.map(Response::createSuccessfulResponse).orElseGet(() -> Response.createFailureResponse("Board does not exist"));
     }
 
     //todo: check again
