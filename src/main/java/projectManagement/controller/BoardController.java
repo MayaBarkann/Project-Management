@@ -1,20 +1,24 @@
 package projectManagement.controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import projectManagement.controller.entities.AddUserRoleDTO;
 import projectManagement.controller.entities.CommentDTO;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.controller.entities.StatusDTO;
 import projectManagement.entities.*;
-import projectManagement.repository.StatusRepo;
-import projectManagement.repository.TypeRepo;
+//import projectManagement.repository.StatusRepo;
+//import projectManagement.repository.TypeRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.utils.Validation;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -22,145 +26,135 @@ import java.util.Optional;
 @RequestMapping(value = "/board")
 @RestController
 public class BoardController {
-
+    private static Logger logger = LogManager.getLogger(BoardController.class.getName());
     @Autowired
     ItemService itemService;
     @Autowired
     BoardService boardService;
+    @Autowired
+    UserService userService;
 
 
     /***
-     * This function filters item of the given board by given properties and values.
+     * This method filters item of the given board by given properties and values.
      * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
      * @param boardId - the id of the board we want to perform the filter on
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
      * @return response entity containing the items that match the filter
      */
+    //todo: change boardId to requestAttribute
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam Long boardId, @RequestBody FilterItemDTO filter) {
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam long boardId, @RequestBody FilterItemDTO filter) {
         Optional<Board> board = boardService.getBoardById(boardId);
+        logger.info("In BoardController - trying to filter items by properties");
         if (!board.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("board does not exist"));
+            logger.error("In BoardController - can not perform the filter since the board does not exist");
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Board does not exist"));
         }
 
         if (filter == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("null pointer- can not perform filter"));
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Null pointer- can not perform filter"));
         }
 
         //todo: go back and change the response
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
 
-    @RequestMapping(value = "/addStatus", method = RequestMethod.POST)
-    public ResponseEntity<Response<Status>> addStatus(@RequestBody StatusDTO statusDTO) {
-
-        if (statusDTO == null || statusDTO.boardId == null || statusDTO.status == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+    /**
+     * This method creates a new board with the given user as the admin.
+     * @param userId the admin of the new board
+     * @param title the title of the new board
+     * @return Response entity with successful response containing the new created board if the given user exists,
+     * otherwise returns bad request with the reason.
+     */
+    @PostMapping("/create-board")
+    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestBody String title){
+        System.out.println(userId +"ff "+ title);
+        Optional<User> admin = userService.getUser(userId);
+        logger.info("In BoardController - creating new board");
+        logger.info(admin.isPresent());
+        if (!admin.isPresent()){
+            logger.error("In BoardController - can not create new board since this user does not exist");
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
         }
-
-
-        Optional<Board> boardFound = boardService.getBoardById(statusDTO.boardId);
-        if (!boardFound.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
-        }
-        Board board = boardFound.get();
-
-        Response<Status> response = boardService.addStatus(board, statusDTO.status);
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
+        return ResponseEntity.ok().body(boardService.createBoard(title, admin.get()));
     }
 
-    @RequestMapping(value = "/{boardId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Board>> getItems(@PathVariable Long boardId) {
-        if (boardId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
+    /**
+     * This method creates new type and add it to the given board
+     * @param boardId
+     * @param type
+     * @return response entity with successful response containing the new Type created if the given board exists,
+     * otherwise returns bad request containing failure Response with the reason for failure.
+     */
+    //todo: add live changes
+    @PostMapping("/add-type")
+    public ResponseEntity<String> addType(@RequestParam long boardId, @RequestBody String type){
+        Response<String> response = boardService.addType(boardId, type);
 
-        Optional<Board> board = boardService.getBoardById(boardId);
-        if (!board.isPresent()) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("the board could not be found"));
-        }
-        Response<Board> response = Response.createSuccessfulResponse(board.get());
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+    }
 
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+    /**
+     * This method creates new status and add it to the given board
+     * @param boardId
+     * @param status
+     * @return response entity with successful response containing the new Status created if the given board exists,
+     * otherwise returns bad request containing failure Response with the reason for failure.
+     */
+    //todo: add live changes with sockets?
+    @PostMapping("/add-status")
+    public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status){
+        Response<String> response = boardService.addStatus(boardId, status);
 
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+    }
 
+    /**
+     * This method removes the given status from board and deletes all items with this status
+     * @param boardId
+     * @param status the status we want to remove
+     * @return
+     */
+    //todo: remove boardId since it seems redundant
+    @DeleteMapping("/remove-status")
+    public ResponseEntity<String> removeStatus(@RequestParam long boardId, @RequestParam String status){
+    //todo: need to remove all items from item table that has this status?
+        Response<String> response = boardService.removeStatus(boardId, status);
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
-//    @RequestMapping(value = "create", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> create(@RequestBody Board board) {
-//        // TODO: we need validation when create a board?
-//            Response<Board> response = boardService.createBoard(board);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
+    @DeleteMapping("/remove-type")
+    public ResponseEntity<String> removeType(@RequestParam long boardId, @RequestParam String type){
+        Response<String> response = boardService.removeType(boardId, type);
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
+    @GetMapping(value = "/get")
+    public ResponseEntity<Response<Board>> getItems(@RequestParam long boardId) {
+        Response<Board> response = boardService.getBoard(boardId);
+
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+    }
+
+//    @PostMapping(value = "/assign-role-to-user")
+//    public ResponseEntity<Response<UserRoleInBoard>> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+////        Response<Board> response = boardService.getBoard(boardId);
+//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+//        Response<UserRoleInBoard> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
 //    }
 //
-//    @RequestMapping(value = "delete", method = RequestMethod.DELETE, consumes = "application/json")
-//    public ResponseEntity<Response> delete(@RequestParam long boardId) {
-//        if(Validation.validateBoard(boardId)) {
-//            Response<Board> response = boardService.delete(boardId);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
+//    @DeleteMapping(value = "/remove-user-role")
+//    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
+//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
+//        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
+//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
 //    }
-//
-//    @RequestMapping(value = "rename", method = RequestMethod.PATCH, consumes = "application/json")
-//    public ResponseEntity<Response> rename(@RequestParam long boardId,@RequestParam String name) {
-//        if(Validation.validateBoard(boardId)) {
-//            Response<Board> response = boardService.rename(boardId,name);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "addItem", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> addItem(@RequestBody Item item, @RequestParam long boardId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.addItem(boardId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "removeItem", method = RequestMethod.DELETE, consumes = "application/json")
-//    public ResponseEntity<Response> removeItem(@RequestBody Item item, @RequestParam long boardId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.removeItem(boardId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "assignItemToUser", method = RequestMethod.POST, consumes = "application/json")
-//    public ResponseEntity<Response> assignItemToUser(@RequestBody Item item, @RequestParam long boardId, @RequestParam long userId) {
-//        if(Validation.validateItem(item)) {
-//            Response<Item> response = itemService.assignItemToUser(boardId,userId,item);
-//            if (response.isSucceed()) {
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
-//    }
+
 
 
 }

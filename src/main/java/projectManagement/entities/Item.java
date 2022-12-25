@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -24,41 +25,41 @@ public class Item {
     @Column(nullable = false)
     private String title;
 
+//    @JsonIncludeProperties(value = {"id", "status"})
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(nullable = false)
     @Column(nullable = false)
     private String status;
 
     @Enumerated(EnumType.STRING)
     private ItemImportance importance;
+
     private String description;
 
+    @Column(nullable = false)
+    private String type = "";
 
-    private String type;
     private LocalDate dueDate;
-
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
     private Set<Item> children;
 
     @JsonIncludeProperties(value = {"id"})
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn()
-
     private Item parent;
 
     @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn(nullable = false)
-
     private Board board;
 
     @JsonIncludeProperties(value = {"id"})
     @ManyToOne()
     @JoinColumn()
-
     private User assignedToUser;
 
     @JsonIncludeProperties(value = {"id" , "name"})
-
     @ManyToOne()
     @JoinColumn(nullable = false)
     private User creator;
@@ -67,22 +68,18 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
 
-    public Item(String title, String status, ItemImportance importance, String type, Item parent, Board board, User creator, User assignedToUser) {
+    public Item(String title, String status, Board board, User creator) {
         this.title = title;
         this.status = status;
-        this.importance = importance;
-        this.type = type;
-        this.parent = parent;
         this.board = board;
         this.creator = creator;
-        this.assignedToUser = assignedToUser;
     }
 
-    //    @OneToMany(mappedBy = "",cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn()
-//    private List<ItemComment> comment;
 
-//    private Set<String> comments;
+
+
+
+
 
 
 }
