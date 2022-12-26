@@ -23,14 +23,14 @@ public class GitRequest {
      * @param link - where to send the request
      * @return GitToken - access_token; token_type; scope
      */
-    public static ResponseEntity<GitToken> reqGitGetToken(String link) {
+    public static GitToken reqGitGetToken(String link) {
         logger.info("in GitRequest -> reqGitGetToken");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         try {
-            return restTemplate.exchange(link, HttpMethod.POST, entity, GitToken.class);
+            return restTemplate.exchange(link, HttpMethod.POST, entity, GitToken.class).getBody();
         } catch (Exception e) {
             logger.error("in GitRequest -> reqGitGetToken -> failed to fetch token from link: " +link);
             return null;
@@ -46,7 +46,7 @@ public class GitRequest {
      * @param bearerToken - put the access_token from reqGitGetToken in the header authorization
      * @return GitUser - login; name; email;
      */
-    public static ResponseEntity<GitUser> reqGitGetUser(String link, String bearerToken) {
+    public static GitUser reqGitGetUser(String link, String bearerToken) {
         logger.info("in GitRequest -> reqGitGetUser");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -65,7 +65,7 @@ public class GitRequest {
                     }
                 }
             }
-            return ResponseEntity.ok(gitUser);
+            return gitUser;
         } catch (Exception e) {
             logger.error("in GitRequest -> reqGitUser -> failed to fetch user from link: " +link);
             return null;

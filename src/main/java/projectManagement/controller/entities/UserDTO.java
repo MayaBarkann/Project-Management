@@ -1,7 +1,8 @@
 package projectManagement.controller.entities;
 
+import lombok.Setter;
 import projectManagement.entities.User;
-
+@Setter
 public class UserDTO {
     private long id;
     private String name;

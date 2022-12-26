@@ -49,9 +49,10 @@ public class AuthController {
             if (response.isSucceed()) {
                 return ResponseEntity.ok().body(response);
             }
+            return ResponseEntity.badRequest().body(response);
         }
         logger.error("in AuthController -> register -> Wrong input");
-        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().body(Response.createFailureResponse("bad input"));
     }
 
     /**
@@ -66,11 +67,12 @@ public class AuthController {
         if (Validation.validateInputLogin(user)) {
             Response<UserLoginDTO> response = authService.login(user);
             if (response.isSucceed()) {
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return ResponseEntity.ok().body(response);
             }
+            return ResponseEntity.badRequest().body(response);
         }
         logger.error("in AuthController -> login -> Wrong input");
-        return new ResponseEntity<>(Response.createFailureResponse("bad input"), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().body(Response.createFailureResponse("bad input"));
     }
 
     /**
