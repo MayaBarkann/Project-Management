@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.*;
 import projectManagement.entities.*;
+import projectManagement.repository.UserRepo;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.AuthService;
+import projectManagement.service.NotificationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,11 @@ public class ItemController {
     BoardService boardService;
     @Autowired
     SocketsUtil socketsUtil;
+    //TODO delete this
+    @Autowired
+    UserRepo userRepo;
+    @Autowired
+    NotificationService notificationService;
 
     @PostMapping(value = "/create")
     public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
@@ -92,6 +99,7 @@ public class ItemController {
         if (response.isSucceed()) {
             //TODO check this one
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+
             return ResponseEntity.ok().body("Type changed successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -113,7 +121,21 @@ public class ItemController {
 
         Response<Item> response = itemService.changeStatus(itemId, status);
         if (response.isSucceed()) {
+
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+            //TODO this should be changed to user in board.
+
+            List<User> userInBoard = userRepo.findAll();
+            String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
+            for (User user : userInBoard) {
+                if (notificationService.checkPop(user, NotifyWhen.ITEM_STATUS_CHANGED)) {
+                    socketsUtil.pushNotification(user.getId(), notificationContent);
+                }
+            }
+
+            notificationService.sendMails(response.getData().getBoard().getId(), NotifyWhen.ITEM_STATUS_CHANGED, notificationContent);
+
+
             return ResponseEntity.ok().body("Status changed successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());

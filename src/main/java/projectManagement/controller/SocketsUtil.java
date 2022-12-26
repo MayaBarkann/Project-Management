@@ -23,15 +23,14 @@ public class SocketsUtil {
 
     public void updateItem(Item item, Long BoardId) {
         System.out.println("Sending item update" + item);
-        template.convertAndSend("/topic/updateItem/"+ BoardId, item);
+        template.convertAndSend("/topic/updateItem/" + BoardId, item);
 
     }
 
-    //sub to notify in client
-//    public void pushNotification(Long userId, String notificationContent) {
-//        template.convertAndSend("/topic/notification/" + userId, notificationContent);
-//
-//    }
+    public void pushNotification(Long userId, String notificationContent) {
+        template.convertAndSend("/topic/notification/" + userId, notificationContent);
+
+    }
 
 
     public Response deleteItem(Response response, long boardId) {
