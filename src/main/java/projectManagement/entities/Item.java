@@ -54,7 +54,7 @@ public class Item {
     @JoinColumn(nullable = false)
     private Board board;
 
-    @JsonIncludeProperties(value = {"id"})
+    @JsonIncludeProperties(value = {"id", "name"})
     @ManyToOne()
     @JoinColumn()
     private User assignedToUser;
@@ -64,7 +64,7 @@ public class Item {
     @JoinColumn(nullable = false)
     private User creator;
 
-    @JsonIncludeProperties(value = {"id","comment"})
+    @JsonIncludeProperties(value = {"id", "comment", "commentedUser", "dateTime"})
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments;
 
