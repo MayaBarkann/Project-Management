@@ -70,7 +70,6 @@ public class BoardController {
      */
     @PostMapping("/create-board")
     public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestBody String title) {
-        System.out.println(userId + "ff " + title);
         Optional<User> admin = userService.getUser(userId);
         logger.info("In BoardController - creating new board");
         logger.info(admin.isPresent());
