@@ -53,6 +53,9 @@ public class GitRequest {
         headers.set("Authorization", "Bearer " + bearerToken);
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         try {
+            System.out.println("==========================================");
+            System.out.println(link);
+            System.out.println(bearerToken);
             GitUser gitUser = restTemplate.exchange(link, HttpMethod.GET, entity, GitUser.class).getBody();
             gitUser.accessToken = bearerToken;
             if (gitUser.getEmail() == null) {

@@ -87,8 +87,11 @@ public class AuthController {
     public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code) {
         logger.info("in AuthController -> loginGithub");
         Response<UserLoginDTO> response = authService.loginGithub(code);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:3000"));
-        return new ResponseEntity<>(response, headers, HttpStatus.MOVED_PERMANENTLY);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setLocation(URI.create("http://localhost:3000"));
+//        return new ResponseEntity<>(response, headers, HttpStatus.MOVED_PERMANENTLY);
+        System.out.println("-----------------------------------------------------------");
+        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
+
     }
 }

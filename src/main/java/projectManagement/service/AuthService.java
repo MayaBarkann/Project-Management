@@ -196,7 +196,7 @@ public class AuthService {
      * @return GitUser login; name; email; accessToken;
      */
     GitUser getGithubUser(String code) {
-        logger.info("in AuthService -> getGithubToken");
+        logger.info("in AuthService -> getGithubUser");
         GitToken gitTokenResponse = getGithubToken(code);
         if (gitTokenResponse != null) {
             try {

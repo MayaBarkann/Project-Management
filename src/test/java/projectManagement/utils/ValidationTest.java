@@ -106,5 +106,9 @@ class ValidationTest {
         String invalidPassword = "password1!";
         assertFalse(Validation.validate(Regex.PASSWORD.getRegex(), invalidPassword ));
     }
+    @Test
+    void validate_invalidData_fail() {
+        assertFalse(Validation.validate(Regex.PASSWORD.getRegex(), null ));
+    }
 
 }
