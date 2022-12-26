@@ -14,6 +14,7 @@ import projectManagement.service.NotificationService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequestMapping("/item")
 @CrossOrigin
@@ -125,11 +126,16 @@ public class ItemController {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             //TODO this should be changed to user in board.
 
-            List<User> userInBoard = userRepo.findAll();
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(response.getData().getBoard().getId());
+
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
-            for (User user : userInBoard) {
-                if (notificationService.checkPop(user, NotifyWhen.ITEM_STATUS_CHANGED)) {
-                    socketsUtil.pushNotification(user.getId(), notificationContent);
+            for (long userId : allUsersInBoard) {
+                Optional<User> user = userService.getUser(userId);
+                if (!user.isPresent()) {
+                    return ResponseEntity.badRequest().body("user not found");
+                }
+                if (notificationService.checkPop(user.get(), NotifyWhen.ITEM_STATUS_CHANGED)) {
+                    socketsUtil.pushNotification(user.get().getId(), notificationContent);
                 }
             }
 

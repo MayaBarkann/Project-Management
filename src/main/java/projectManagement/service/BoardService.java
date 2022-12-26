@@ -8,6 +8,8 @@ import projectManagement.controller.entities.BoardDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -178,8 +180,12 @@ public class BoardService {
         return Response.createSuccessfulResponse("Success");
     }
 
+//todo delete this
+    public Set<Long> getAllUsersInBoardByBoardId(long boardId) {
+        Optional<Board> boardOptional = getBoardById(boardId);
 
-
+        return boardOptional.map(board -> board.getUserRole().keySet().stream().map(User::getId).collect(Collectors.toSet())).orElse(null);
+    }
 
 
 

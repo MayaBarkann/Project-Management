@@ -7,7 +7,10 @@ import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.NotificationRepo;
 import projectManagement.repository.UserRepo;
+import projectManagement.utils.Email;
 
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,14 +89,19 @@ public class NotificationService {
 
     public void sendMails(Long boardId, NotifyWhen notifyWhen, String content) {
         List<String> emails = checkEmailNotification(notifyWhen, boardId);
-        System.out.println(Arrays.toString(emails.toArray()));
+        for (String email : emails) {
+            try {
+                Email.send(email, content, "project management");
+            } catch (Exception e) {
+
+            }
+        }
 
 
     }
 
     //TODO
     public boolean checkPop(User user, NotifyWhen notifyWhen) {
-//        List<Notification> all = notificationRepo.findAll();
 
         Notification userNotification = notificationRepo.findByUser(user);
         switch (notifyWhen) {
