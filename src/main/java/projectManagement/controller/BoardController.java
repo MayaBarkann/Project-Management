@@ -23,7 +23,7 @@ import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+@CrossOrigin
 @RequestMapping(value = "/board")
 @RestController
 public class BoardController {
