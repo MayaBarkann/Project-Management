@@ -1,4 +1,14 @@
 package projectManagement.filter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.GenericFilterBean;
+import projectManagement.service.AuthService;
+
 import javax.security.auth.login.AccountNotFoundException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -7,16 +17,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import projectManagement.service.AuthService;
-import projectManagement.utils.GitRequest;
 
 @Component
 @Order(0)
