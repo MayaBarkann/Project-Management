@@ -41,7 +41,7 @@ public class Item {
 
     private LocalDate dueDate;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE,orphanRemoval = true)//remove
     private Set<Item> children;
 
     @JsonIncludeProperties(value = {"id"})
