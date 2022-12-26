@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import projectManagement.utils.Provider;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -31,6 +32,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
     public void setProvider(Provider provider) {
         this.provider = provider;
     }
@@ -45,16 +47,21 @@ public class User {
 //    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Item> ItemsCreated;
 
-//    @OneToMany(mappedBy = "commentedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    //    @OneToMany(mappedBy = "commentedUser", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Comment> commentedUsers;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    @JoinColumn(nullable = false)
+    Notification userNotification;
 
     public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
     }
-    public static User CreateUser(String name, String email, String password,Provider provider) {
-        User user= new User();
+
+    public static User CreateUser(String name, String email, String password, Provider provider) {
+        User user = new User();
         user.name = name;
         user.email = email;
         user.password = password;
