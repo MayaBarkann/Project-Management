@@ -21,9 +21,9 @@ public class SocketsUtil {
         return response;
     }
 
-    public void updateItem(Item item, Long userId, Long BoardId) {
+    public void updateItem(Item item, Long BoardId) {
         System.out.println("Sending item update" + item);
-        template.convertAndSend("/topic/updateItem/" + userId + "/" + BoardId, item);
+        template.convertAndSend("/topic/updateItem/"+ BoardId, item);
 
     }
 
@@ -34,9 +34,33 @@ public class SocketsUtil {
 //    }
 
 
-    public Response deleteItem(Response response) {
+    public Response deleteItem(Response response, long boardId) {
         System.out.println("Sending item update" + response);
-        template.convertAndSend("/topic/deleteItem", response.getData());
+        template.convertAndSend("/topic/deleteItem/" + boardId, response.getData());
+        return response;
+    }
+
+    public Response addBoardType(Response response, long boardId) {
+        System.out.println("board type added: " + response);
+        template.convertAndSend("/topic/addBoardType/" + boardId, response.getData());
+        return response;
+    }
+
+    public Response deleteBoardType(Response response, long boardId) {
+        System.out.println("board type added: " + response);
+        template.convertAndSend("/topic/deleteBoardType/" + boardId, response.getData());
+        return response;
+    }
+
+    public Response addBoardStatus(Response response, long boardId) {
+        System.out.println("board status added: " + response);
+        template.convertAndSend("/topic/addBoardStatus/" + boardId, response.getData());
+        return response;
+    }
+
+    public Response deleteBoardStatus(Response response, long boardId) {
+        System.out.println("board type added: " + response);
+        template.convertAndSend("/topic/deleteBoardStatus/" + boardId, response.getData());
         return response;
     }
 
