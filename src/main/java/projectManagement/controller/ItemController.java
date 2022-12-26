@@ -48,7 +48,6 @@ public class ItemController {
         if (!responseStatus.isSucceed()){
             return ResponseEntity.badRequest().body(responseStatus.getMessage());
         }
-
         itemService.createItem(item.getTitle(), item.getStatus(), creator.get(), optionalBoard.get());
 //todo: add live update
         return ResponseEntity.ok().body("Item was created successfully");
@@ -217,5 +216,18 @@ public class ItemController {
         return response.isSucceed() ? ResponseEntity.ok("Item's importance was updated successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
 
+
+    @PostMapping("create-subItem")
+    public ResponseEntity<String> createSubItem(@RequestAttribute User user,@RequestParam long parentItemId, @RequestBody String title){
+        System.out.println(user.getId());
+        Optional<Item> optionalItem = itemService.getItem(parentItemId);
+        if(!optionalItem.isPresent()){
+            return ResponseEntity.badRequest().body("parentItemId does not exist");
+        }
+        Item parentItem = optionalItem.get();
+        Response<Item> response = itemService.createSubItem(title, parentItem.getStatus(), user, parentItem.getBoard(),parentItem);
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok("Sub Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
 
 }

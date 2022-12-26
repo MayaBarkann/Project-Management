@@ -7,6 +7,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import projectManagement.entities.User;
 import projectManagement.service.AuthService;
 
 @Component
@@ -50,8 +52,12 @@ public class TokenFilter extends GenericFilterBean{
                 }
                 try {
                     Long userId = authService.checkTokenToUserInDB(token);
-                    if(authService.checkTokenIsReal(userId,token)) {
-                        request.setAttribute("User", authService.getUser(userId));
+                    Optional<User> user = authService.getUser(userId);
+                    if(authService.checkTokenIsReal(userId,token) && user.isPresent()) {
+                        System.out.println("------------------------------------------------------------------------");
+                        request.setAttribute("user", user.get());
+                        System.out.println(authService.getUser(userId));
+                        System.out.println("------------------------------------------------------------------------");
                     }else {
                         logger.error("in AuthorizationFilter -> doFilter -> Invalid Token.");
                         ((HttpServletResponse) response).setStatus(400);

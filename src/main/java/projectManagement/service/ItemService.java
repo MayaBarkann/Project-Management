@@ -184,6 +184,12 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.save(item));
     }
 
+
+
+    public Response<Item> createSubItem(String title, String status, User creator, Board board,Item parent){
+        return Response.createSuccessfulResponse(itemRepo.save(Item.createItemFromParent(title, status, board, creator,parent)));
+    }
+
     public Optional<Item> getItem(long itemId) {
         return itemRepo.findById(itemId);
     }

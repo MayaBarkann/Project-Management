@@ -1,7 +1,7 @@
 package projectManagement.utils;
 
 public enum Regex {
-    NAME("([a-zA-ZÀ-ÿ][-,a-z. ']+[ ]*)+"),
+    NAME("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"),
 
     PHONE_NUMBER("/^05\\d([-]{0,1})\\d{7}$/"),
     EMAIL("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$"),

@@ -75,6 +75,12 @@ public class Item {
         this.creator = creator;
     }
 
+    public static Item createItemFromParent(String title, String status, Board board, User creator,Item parent) {
+        Item item = new Item(title,status,board,creator);
+        item.parent = parent;
+        return item;
+    }
+
 
 
 
