@@ -15,11 +15,13 @@ import projectManagement.entities.User;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
+
 import java.util.List;
 import java.util.Optional;
 
 
 @RequestMapping(value = "/board")
+@CrossOrigin
 @RestController
 public class BoardController {
     private static Logger logger = LogManager.getLogger(BoardController.class.getName());
@@ -29,6 +31,8 @@ public class BoardController {
     BoardService boardService;
     @Autowired
     UserService userService;
+    @Autowired
+    SocketsUtil socketsUtil;
 
 
     /***
@@ -58,18 +62,19 @@ public class BoardController {
 
     /**
      * This method creates a new board with the given user as the admin.
+     *
      * @param userId the admin of the new board
-     * @param title the title of the new board
+     * @param title  the title of the new board
      * @return Response entity with successful response containing the new created board if the given user exists,
      * otherwise returns bad request with the reason.
      */
     @PostMapping("/create-board")
-    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestBody String title){
-        System.out.println(userId +"ff "+ title);
+    public ResponseEntity<Response<Board>> createBoard(@RequestParam long userId, @RequestBody String title) {
+        System.out.println(userId + "ff " + title);
         Optional<User> admin = userService.getUser(userId);
         logger.info("In BoardController - creating new board");
         logger.info(admin.isPresent());
-        if (!admin.isPresent()){
+        if (!admin.isPresent()) {
             logger.error("In BoardController - can not create new board since this user does not exist");
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
         }
@@ -78,6 +83,7 @@ public class BoardController {
 
     /**
      * This method creates new type and add it to the given board
+     *
      * @param boardId
      * @param type
      * @return response entity with successful response containing the new Type created if the given board exists,
@@ -85,14 +91,20 @@ public class BoardController {
      */
     //todo: add live changes
     @PostMapping("/add-type")
-    public ResponseEntity<String> addType(@RequestParam long boardId, @RequestBody String type){
+    public ResponseEntity<String> addType(@RequestParam long boardId, @RequestBody String type) {
         Response<String> response = boardService.addType(boardId, type);
+        if (response.isSucceed()) {
+            socketsUtil.addBoardType(response, boardId);
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
      * This method creates new status and add it to the given board
+     *
      * @param boardId
      * @param status
      * @return response entity with successful response containing the new Status created if the given board exists,
@@ -100,39 +112,58 @@ public class BoardController {
      */
 
     @PostMapping("/add-status")
-    public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status){
+    public ResponseEntity<String> addStatus(@RequestParam long boardId, @RequestBody String status) {
         Response<String> response = boardService.addStatus(boardId, status);
+        if (response.isSucceed()) {
+            socketsUtil.addBoardStatus(response, boardId);
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
     /**
      * This method removes the given status from board and deletes all items with this status
+     *
      * @param boardId
-     * @param status the status we want to remove
+     * @param status  the status we want to remove
      * @return
      */
     //todo: remove boardId since it seems redundant
     @DeleteMapping("/remove-status")
-    public ResponseEntity<String> removeStatus(@RequestParam long boardId, @RequestParam String status){
-    //todo: need to remove all items from item table that has this status?
+    public ResponseEntity<String> removeStatus(@RequestParam long boardId, @RequestParam String status) {
+        //todo: need to remove all items from item table that has this status?
         Response<String> response = boardService.removeStatus(boardId, status);
+        if (response.isSucceed()) {
+            socketsUtil.deleteBoardStatus(response, boardId);
+            //TODO remove all items that has this status through the socket
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
     @DeleteMapping("/remove-type")
-    public ResponseEntity<String> removeType(@RequestParam long boardId, @RequestParam String type){
+    public ResponseEntity<String> removeType(@RequestParam long boardId, @RequestParam String type) {
         Response<String> response = boardService.removeType(boardId, type);
 
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+        if (response.isSucceed()) {
+            socketsUtil.deleteBoardType(response, boardId);
+            //TODO update all the that has theseitem in live
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+
     }
 
     @GetMapping(value = "/get-board")
     public ResponseEntity<BoardDTO> getBoard(@RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(boardId);
-        if(response.isSucceed()){
+        if (response.isSucceed()) {
             return ResponseEntity.ok().body(BoardDTO.createBoardDTOFromBoard(response.getData()));
         }
 
@@ -143,7 +174,7 @@ public class BoardController {
     public ResponseEntity<String> assignRoleToUser(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
 //        Response<Board> response = boardService.getBoard(boardId);
         Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
-        if(!user.isPresent()){
+        if (!user.isPresent()) {
             return ResponseEntity.badRequest().body("Can not assign role to user - user does not exist");
         }
         Response<String> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
