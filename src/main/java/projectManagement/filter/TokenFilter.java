@@ -43,7 +43,6 @@ public class TokenFilter extends GenericFilterBean{
         if (!url.contains("auth") && !url.contains("ws") && !url.contains("error") && !httpRequest.getMethod().equals(HttpMethod.OPTIONS.toString())) {
             if (httpRequest.getHeader("Authorization") != null) {
                 String token = httpRequest.getHeader("Authorization");
-                System.out.println(token);
                 if (token == null) {
                     logger.error("in AuthorizationFilter -> doFilter -> token is null");
                     ((HttpServletResponse) response).setStatus(400);
@@ -54,10 +53,7 @@ public class TokenFilter extends GenericFilterBean{
                     Long userId = authService.checkTokenToUserInDB(token);
                     Optional<User> user = authService.getUser(userId);
                     if(authService.checkTokenIsReal(userId,token) && user.isPresent()) {
-                        System.out.println("------------------------------------------------------------------------");
                         request.setAttribute("user", user.get());
-                        System.out.println(authService.getUser(userId));
-                        System.out.println("------------------------------------------------------------------------");
                     }else {
                         logger.error("in AuthorizationFilter -> doFilter -> Invalid Token.");
                         ((HttpServletResponse) response).setStatus(400);

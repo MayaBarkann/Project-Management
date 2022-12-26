@@ -58,7 +58,10 @@ public class ItemService {
         Item item = optItem.get();
         item.setStatus(status);
         itemRepo.save(item);
-
+        for (Item subItem:item.getChildren()) {
+            subItem.setStatus(item.getStatus());
+            itemRepo.save(subItem);
+        }
         //todo: add live update
         return Response.createSuccessfulResponse(item);
     }
@@ -187,7 +190,10 @@ public class ItemService {
 
 
     public Response<Item> createSubItem(String title, String status, User creator, Board board,Item parent){
-        return Response.createSuccessfulResponse(itemRepo.save(Item.createItemFromParent(title, status, board, creator,parent)));
+        Item subItem = itemRepo.save(Item.createItemFromParent(title, status, board, creator,parent));
+        parent.getChildren().add(subItem);
+        itemRepo.save(parent);
+        return Response.createSuccessfulResponse(subItem);
     }
 
     public Optional<Item> getItem(long itemId) {

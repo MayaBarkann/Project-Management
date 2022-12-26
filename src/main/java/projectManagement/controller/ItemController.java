@@ -219,7 +219,6 @@ public class ItemController {
 
     @PostMapping("create-subItem")
     public ResponseEntity<String> createSubItem(@RequestAttribute User user,@RequestParam long parentItemId, @RequestBody String title){
-        System.out.println(user.getId());
         Optional<Item> optionalItem = itemService.getItem(parentItemId);
         if(!optionalItem.isPresent()){
             return ResponseEntity.badRequest().body("parentItemId does not exist");
