@@ -55,8 +55,8 @@ public class ItemController {
     }
 
 
-    @DeleteMapping(value = "/delete")
-    public ResponseEntity<String> deleteItem(@RequestParam long itemId) {
+    @DeleteMapping(value = "/delete_item")
+    public ResponseEntity<String> deleteItem(@RequestAttribute User user, @RequestParam long boardId, @RequestParam long itemId) {
         Response<Item> response = itemService.deleteItem(itemId);
 
         return response.isSucceed() ? ResponseEntity.ok().body("Item was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());

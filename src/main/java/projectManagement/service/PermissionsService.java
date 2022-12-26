@@ -1,11 +1,13 @@
 package projectManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.UserRepo;
 
 import java.util.Optional;
 
+@Service
 public class PermissionsService {
     UserRepo userRepo;
     BoardRepo boardRepo;
@@ -16,9 +18,16 @@ public class PermissionsService {
         this.boardRepo = boardRepo;
     }
 
-    public Response<Boolean> checkPermission(long userId, long boardId, Action action) {
+    public Response<Boolean> checkPermission(long userId, long boardId, String methodName) {
         Optional<User> user = userRepo.findById(userId);
         Optional<Board> board = boardRepo.findById(boardId);
+        Action action;
+
+        try{
+            action  = Action.valueOf(methodName);
+        }catch (IllegalArgumentException e){
+            return Response.createFailureResponse("Invalid method name");
+        }
 
         if (!user.isPresent()) {
             return Response.createFailureResponse(String.format("User with id: %d does not exist", userId));

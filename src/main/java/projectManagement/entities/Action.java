@@ -2,7 +2,8 @@ package projectManagement.entities;
 
 public enum Action {
     CREATE_ITEM("create-item"),
-    DELETE_ITEM("delete-item"),
+//    DELETE_ITEM("delete-item"),
+    delete_item(""),
     ASSIGN_ITEM("assign-item"),
     UPDATE_ITEM("update-item"),
     ADD_STATUS("add-status"),
