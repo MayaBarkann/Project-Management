@@ -18,7 +18,7 @@ public class PermissionsService {
         this.boardRepo = boardRepo;
     }
 
-    public Response<Boolean> checkPermission(long userId, long boardId, String methodName) {
+    public Response<Board> checkPermission(long userId, long boardId, String methodName) {
         Optional<User> user = userRepo.findById(userId);
         Optional<Board> board = boardRepo.findById(boardId);
         Action action;
@@ -45,7 +45,7 @@ public class PermissionsService {
 
         if(PermissionsManager.hasPermission(userRole ,action)) {
 
-            return Response.createSuccessfulResponse(true);
+            return Response.createSuccessfulResponse(board.get());
 
         }
 

@@ -44,7 +44,7 @@ public class BoardController {
      */
     //todo: change boardId to requestAttribute
     @GetMapping("/filter")
-    public ResponseEntity<Response<List<Item>>> filterItems(@RequestParam long boardId, @RequestBody FilterItemDTO filter) {
+    public ResponseEntity<Response<List<Item>>> filterItems(@RequestAttribute User user, @RequestParam long boardId, @RequestBody FilterItemDTO filter) {
         Optional<Board> board = boardService.getBoardById(boardId);
         logger.info("In BoardController - trying to filter items by properties");
         if (!board.isPresent()) {
@@ -180,6 +180,7 @@ public class BoardController {
         Response<String> response = boardService.assignUserRole(boardId, user.get(), userRoleDTO.getRole());
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
+
 
 //    @DeleteMapping(value = "/remove-user-role")
 //    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {

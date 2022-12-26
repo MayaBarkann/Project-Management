@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
+import projectManagement.entities.Board;
 import projectManagement.entities.Response;
 import projectManagement.entities.User;
 import projectManagement.filter.entities.MutableHttpServletRequest;
@@ -54,9 +55,9 @@ public class PermissionFilter implements Filter {
                     long boardId = Long.parseLong(boardIdStr);
                     String methodName = getMethodNameFromUrl(servletRequest);
                     System.out.println("In permission filter -> method : " + methodName);
-                    Response<Boolean> hasPermissionResponse = permissionsService.checkPermission(user.getId(), boardId, methodName);
+                    Response<Board> hasPermissionResponse = permissionsService.checkPermission(user.getId(), boardId, methodName);
                     if(hasPermissionResponse.isSucceed()) {
-//                    req.setAttribute("user", tokenCorrect.getData());
+                        req.setAttribute("board", hasPermissionResponse.getData());
                         filterChain.doFilter(req,res);
                     } else {
                         servletResponse.getOutputStream().write(hasPermissionResponse.getMessage().getBytes());
