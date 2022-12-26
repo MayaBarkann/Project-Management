@@ -7,7 +7,8 @@ public enum Regex {
     EMAIL("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$"),
     PASSWORD("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"),
     ID("^[0-9]*"),
-    FILE_NAME("^[A-za-z0-9 .]{1,255}$");
+    FILE_NAME("^[A-za-z0-9 .]{1,255}$"),
+    Auth("^/auth.*");
 
     private final String regex;
 
