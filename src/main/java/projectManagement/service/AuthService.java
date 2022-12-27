@@ -30,12 +30,15 @@ import java.util.Optional;
 public class AuthService {
     private static Logger logger = LogManager.getLogger(AuthService.class.getName());
 
-    @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     UserRepo userRepo;
     @Autowired
     private Environment env;
+
+    public AuthService(){
+        bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    }
 
     Map<Long, String> userToToken = new HashMap<>();
 
@@ -258,4 +261,21 @@ public class AuthService {
         return Token.createJWT(String.valueOf(userid), "Project Management", "login", Instant.now().toEpochMilli());
     }
 
+
+    public Response<User> isTokenCorrect(String token){
+        logger.info("in AuthService -> checkTokenToUserInDB");
+        Claims claims = Token.decodeJWT(token);
+        if (claims == null) {
+            logger.error("in AuthService -> checkTokenToUserInDB -> fail: cannot decode token" + token);
+            throw new IllegalAccessError("Wrong token input");
+        }
+        long userId = Long.parseLong(claims.getId());
+        if(checkTokenIsReal(userId, token)){
+            Optional<User> user = getUser(userId);
+            return user.isPresent() ? Response.createSuccessfulResponse(user.get()) : Response.createFailureResponse("User does not exist");
+        }
+
+        return Response.createFailureResponse("Invalid token");
+
+    }
 }

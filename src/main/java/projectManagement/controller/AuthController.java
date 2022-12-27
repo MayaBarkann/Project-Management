@@ -41,7 +41,7 @@ public class AuthController {
      * @param user - mail,password,name
      * @return l
      */
-    @RequestMapping(value = "register", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "/register", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserDTO>> register(@RequestBody UserRequest user) {
         logger.info("in AuthController -> register");
         if (Validation.validateInputRegister(user)) {
@@ -61,7 +61,7 @@ public class AuthController {
      * @param user - (email,password)
      * @return - UserLoginDTO => userId; token;
      */
-    @RequestMapping(value = "login", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "/login", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Response<UserLoginDTO>> login(@RequestBody UserRequest user) {
         logger.info("in AuthController -> login");
         if (Validation.validateInputLogin(user)) {

@@ -33,43 +33,48 @@ public class ItemController {
     @Autowired
     NotificationService notificationService;
 
-    @PostMapping(value = "/create")
-    public ResponseEntity<String> createItem(@RequestParam long userId, @RequestParam long boardId, @RequestBody CreateItem item) {
+    @PostMapping(value = "/create_item")
+    public ResponseEntity<String> createItem(@RequestAttribute Board board, @RequestAttribute User user, @RequestBody CreateItem item) {
         if (item == null) {
             return ResponseEntity.badRequest().body("parameter could not be null");
         }
 
-        if (item.getBoardId() == null) {
-            return ResponseEntity.badRequest().body("Board id could not be null");
-        }
+//        if (item.getBoardId() == null) {
+//            return ResponseEntity.badRequest().body("Board id could not be null");
+//        }
+//
+//        Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
+//        if (!optionalBoard.isPresent()) {
+//            return ResponseEntity.badRequest().body("Board not found");
+//        }
+//
+//        Optional<User> creator = userService.getUser(userId);
+//        if (!creator.isPresent()) {
+//            return ResponseEntity.badRequest().body("User does not exist");
+//        }
 
-        Optional<Board> optionalBoard = boardService.getBoardById(item.getBoardId());
-        if (!optionalBoard.isPresent()) {
-            return ResponseEntity.badRequest().body("Board not found");
-        }
-
-        Optional<User> creator = userService.getUser(userId);
-        if (!creator.isPresent()) {
-            return ResponseEntity.badRequest().body("User does not exist");
-        }
-
-        Response<String> responseStatus = boardService.statusExistsInBoard(optionalBoard.get(), item.getStatus());
+        Response<String> responseStatus = boardService.statusExistsInBoard(board, item.getStatus());
         if (!responseStatus.isSucceed()) {
             return ResponseEntity.badRequest().body(responseStatus.getMessage());
         }
 
-        Response<Item> createdItemResponse = itemService.createItem(item.getTitle(), item.getStatus(), creator.get(), optionalBoard.get());
+        Response<Item> createdItemResponse = itemService.createItem(item.getTitle(), item.getStatus(), user, board);
+        if(createdItemResponse.isSucceed()){
+            socketsUtil.createItem(createdItemResponse, board.getId());
+            return ResponseEntity.ok().body(createdItemResponse.getMessage());
+        }
+
+        return ResponseEntity.badRequest().body(createdItemResponse.getMessage());
 //todo: add live update
-        socketsUtil.createItem(createdItemResponse, boardId);
-        return ResponseEntity.ok().body("Item was created successfully");
+
     }
 
 
-    @DeleteMapping(value = "/delete")
-    public ResponseEntity<String> deleteItem(@RequestParam long itemId) {
-        Response<Item> response = itemService.deleteItem(itemId);
+    @DeleteMapping(value = "/delete_item")
+    public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
+        Response<Item> response = itemService.deleteItem(itemId, board);
         if (response.isSucceed()) {
-            socketsUtil.deleteItem(response, response.getData().getBoard().getId());
+            socketsUtil.deleteItem(response, board.getId());
             return ResponseEntity.ok().body("Item was deleted successfully");
 
         } else {
@@ -78,44 +83,33 @@ public class ItemController {
     }
 
 
-    @PutMapping("/change-type")
-    public ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody String type) {
+    @PutMapping("/change_item_type")
+    public ResponseEntity<String> changeType(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String type) {
         if (type == null) {
             return ResponseEntity.badRequest().body("Can not update type - type is null");
         }
 
-        Optional<Item> item = itemService.getItem(itemId);
-        if (!item.isPresent()) {
-            return ResponseEntity.badRequest().body("Can not update type - Item does not exist");
-        }
-
-        Response<String> responseType = boardService.typeExistsInBoard(item.get().getBoard(), type);
+        Response<String> responseType = boardService.typeExistsInBoard(board, type);
 
         if (!responseType.isSucceed()) {
             return ResponseEntity.badRequest().body(responseType.getMessage());
         }
 
-        Response<Item> response = itemService.changeType(itemId, type);
+        Response<Item> response = itemService.changeType(itemId, type, board);
         if (response.isSucceed()) {
-            //TODO check this one
-            socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
-
-            return ResponseEntity.ok().body("Type changed successfully");
-        } else {
-            return ResponseEntity.badRequest().body(response.getMessage());
+                //TODO check this one
+                socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+                return ResponseEntity.ok().body("Type changed successfully");
         }
 
+        return ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
-    @PutMapping("/change-status")
-    public ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody String status) {
-        Optional<Item> item = itemService.getItem(itemId);
-        if (!item.isPresent()) {
-            return ResponseEntity.badRequest().body("Can not update status - Item does not exist");
-        }
+    @PutMapping("/change_item_status")
+    public ResponseEntity<String> changeStatus(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String status) {
 
-        if (!boardService.statusExistsInBoard(item.get().getBoard(), status).isSucceed()) {
+        if (!boardService.statusExistsInBoard(board, status).isSucceed()) {
             return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
@@ -148,7 +142,7 @@ public class ItemController {
      * @param description
      * @return
      */
-    @PutMapping("/change-description")
+    @PutMapping("/change_item_description")
     public ResponseEntity<String> changeItemDescription(@RequestParam long itemId, @RequestBody String description) {
         Response<Item> response = itemService.changeDescription(itemId, description);
         if (response.isSucceed()) {
@@ -161,7 +155,7 @@ public class ItemController {
     }
 
     //todo
-    @PutMapping("/change-assign-to-user")
+    @PutMapping("/change_item_assign_to_user")
     public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId) {
         Optional<User> assignedUser = userService.getUser(userId);
         if (!assignedUser.isPresent()) {
@@ -188,11 +182,11 @@ public class ItemController {
     }
 
 
-    @RequestMapping(value = "/getItems/{boardId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<List<Item>>> getItems(@PathVariable Long boardId) {
-        if (boardId == null) {
-            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
-        }
+    @RequestMapping(value = "/get_items", method = RequestMethod.GET)
+    public ResponseEntity<Response<List<Item>>> getItems(@RequestAttribute User user, @RequestParam long boardId) {
+//        if (boardId == null) {
+//            return ResponseEntity.badRequest().body(Response.createFailureResponse("parameter could not be null"));
+//        }
 
         Response<List<Item>> response = itemService.getBoardItems(boardId);
 
@@ -205,19 +199,19 @@ public class ItemController {
 
     }
 
-    @RequestMapping(value = "/getItem/{itemId}", method = RequestMethod.GET)
-    public ResponseEntity<Response<Item>> getItem(@PathVariable Long itemId) {
-
-        Optional<Item> item = itemService.getItem(itemId);
-        Response<Item> response = Response.createSuccessfulResponse(item.get());
-        if (response.isSucceed()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-
-    }
+//    @RequestMapping(value = "/getItem/{itemId}", method = RequestMethod.GET)
+//    public ResponseEntity<Response<Item>> getItem(@PathVariable Long itemId) {
+//
+//        Optional<Item> item = itemService.getItem(itemId);
+//        Response<Item> response = Response.createSuccessfulResponse(item.get());
+//        if (response.isSucceed()) {
+//            return ResponseEntity.ok().body(response);
+//        } else {
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//
+//
+//    }
 
     /**
      * @param userId
@@ -226,7 +220,7 @@ public class ItemController {
      * @param commentStr
      * @return
      */
-    @PostMapping("/add-comment")
+    @PostMapping("/add_comment")
     public ResponseEntity<String> addComment(@RequestParam long userId, @RequestParam long boardId, @RequestParam long itemId, @RequestBody String commentStr) {
         Optional<User> user = userService.getUser(userId);
         if (!user.isPresent()) {
@@ -250,8 +244,8 @@ public class ItemController {
      * @param commentId
      * @return
      */
-    @DeleteMapping("delete-comment")
-    public ResponseEntity<String> deleteComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestBody long commentId) {
+    @DeleteMapping("delete_comment")
+    public ResponseEntity<String> deleteComment(@RequestAttribute long userId, @RequestParam long boardId, @RequestParam long commentId) {
         Optional<User> user = userService.getUser(userId);
         if (!user.isPresent()) {
             return ResponseEntity.badRequest().body("User does not exist");
@@ -262,7 +256,7 @@ public class ItemController {
     }
 
 
-    @PutMapping("update-importance")
+    @PutMapping("update_importance")
     public ResponseEntity<String> updateItemImportance(@RequestParam long itemId, @RequestParam long boardId, @RequestBody ItemImportance importance) {
         Response<Item> response = itemService.updateImportance(itemId, importance);
         if (response.isSucceed()) {

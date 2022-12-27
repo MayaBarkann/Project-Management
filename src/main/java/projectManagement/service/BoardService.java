@@ -12,6 +12,8 @@ import projectManagement.repository.BoardRepo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -28,11 +30,12 @@ public class BoardService {
     /**
      * This function creates a new board with title and assigning the user to be the admin of this new board.
      * It saves the new board in BoardRepo and saving the given user with role Admin and the new board created in UserRoleInBoardRepo
+     *
      * @param title the title of the created board
      * @param admin the admin of the created board
      * @return the new created board
      */
-    public Response<Board> createBoard(String title, User admin){
+    public Response<Board> createBoard(String title, User admin) {
         Board newBoard = boardRepo.save(new Board(title, admin));
 
         return Response.createSuccessfulResponse(newBoard);
@@ -40,48 +43,56 @@ public class BoardService {
 
     /**
      * creates new Status with the given name and adds it to the given board
-     * @param boardId
-     * @param status name of the new status created
+     *
+     * @param board
+     * @param status  name of the new status created
      * @return the new status
      */
-    public Response<String> addStatus(long boardId, String status) {
-        if(status == null || status.isEmpty()){
+    public Response<String> addStatus(Board board, String status) {
+        if (status == null || status.isEmpty()) {
             logger.error("In BoardService - failed to create new status since it is empty or null");
             return Response.createFailureResponse("Can not create empty status");
         }
 
-        Optional<Board> board = getBoardById(boardId);
-        if(!board.isPresent()){
-            return Response.createFailureResponse("Can not add status - board does not exist");
+        if(board == null){
+            return Response.createFailureResponse("Can not create status- board is null");
         }
-        Board newBoard = board.get();
-        newBoard.addStatus(status);
-        boardRepo.save(newBoard);
+
+//        Optional<Board> board = getBoardById(boardId);
+//        if (!board.isPresent()) {
+//            return Response.createFailureResponse("Can not add status - board does not exist");
+//        }
+//        Board newBoard = board.get();
+        board.addStatus(status);
+        boardRepo.save(board);
         //todo live update
         return Response.createSuccessfulResponse(status);
     }
 
     /**
-     *
-     * @param boardId
+     * @param board
      * @param type
      * @return
      */
-    public Response<String> addType(long boardId, String type){
-        if(type == null || type.isEmpty()){
+    public Response<String> addType(Board board, String type) {
+        if (type == null || type.isEmpty()) {
             logger.error("In BoardService - failed to create new type since it is empty or null");
             return Response.createFailureResponse("Can not create empty type");
         }
 
-        Optional<Board> board = getBoardById(boardId);
-        if(!board.isPresent()){
-            logger.error("In BoardService - failed to create new type, board does not exist");
-            return Response.createFailureResponse("Can not create new type - board does not exist");
+        if(board == null){
+            return Response.createFailureResponse("Board can not be null");
         }
 
-        Board newBoard = board.get();
-        newBoard.addType(type);
-        boardRepo.save(newBoard);
+//        Optional<Board> board = getBoardById(boardId);
+//        if (!board.isPresent()) {
+//            logger.error("In BoardService - failed to create new type, board does not exist");
+//            return Response.createFailureResponse("Can not create new type - board does not exist");
+//        }
+
+//        Board newBoard = board.get();
+        board.addType(type);
+        boardRepo.save(board);
         return Response.createSuccessfulResponse(type);
     }
 
@@ -90,67 +101,89 @@ public class BoardService {
      * @param status
      * @return
      */
-    public Response<String> removeStatus(long boardId, String status){
-        if(status == null || status.isEmpty()){
-            logger.error("In BoardService - failed to create new status since it is empty or null");
-            return Response.createFailureResponse("Can not create empty status");
+    public Response<String> removeStatus(Board board, String status) {
+        if (status == null || status.isEmpty()) {
+            logger.error("In BoardService - failed to delete status since it is empty or null");
+            return Response.createFailureResponse("Can not delete empty status");
         }
 
-        Optional<Board> board = getBoardById(boardId);
-        if(!board.isPresent()){
-            return Response.createFailureResponse("Can not add status - board does not exist");
+        if(board == null){
+            return Response.createFailureResponse("Can not delete status- board is null");
         }
-        Board newBoard = board.get();
-        newBoard.removeStatus(status);
-        boardRepo.save(newBoard);
-        //todo live update
-        return Response.createSuccessfulResponse(status);
+
+//        Optional<Board> board = getBoardById(boardId);
+//        if (!board.isPresent()) {
+//            return Response.createFailureResponse("Can not add status - board does not exist");
+//        }
+//        Board newBoard = board.get();
+        if(board.getStatuses().contains(status)){
+            board.removeStatus(status);
+            boardRepo.save(board);
+            return Response.createSuccessfulResponse(status);
+        }
+
+        return Response.createFailureResponse("Can not remove status since it does not exist in board");
+
     }
 
 
-    public Response<String> removeType(long boardId, String type){
-        if(type == null || type.isEmpty()){
-            logger.error("In BoardService - failed to create new type since it is empty or null");
-            return Response.createFailureResponse("Can not create empty type");
+    public Response<String> removeType(Board board, String type) {
+        if (type == null || type.isEmpty()) {
+            logger.error("In BoardService - failed to delete type since it is empty or null");
+            return Response.createFailureResponse("Can not delete empty type");
         }
 
-        Optional<Board> board = getBoardById(boardId);
-        if(!board.isPresent()){
-            return Response.createFailureResponse("Can not add type - board does not exist");
+        if(board == null){
+            logger.error("In BoardService - failed to delete type - board is null");
+            return Response.createFailureResponse("Can not delete type - board is null");
         }
-        Board newBoard = board.get();
-        //todo check if type does not exists then return failure response
-        newBoard.removeType(type);
-        boardRepo.save(newBoard);
-        //todo live update
-        return Response.createSuccessfulResponse(type);
+
+//        Optional<Board> board = getBoardById(boardId);
+//        if (!board.isPresent()) {
+//            return Response.createFailureResponse("Can not add type - board does not exist");
+//        }
+//        Board newBoard = board.get();
+
+        if(board.getTypes().contains(type)){
+            board.removeType(type);
+            boardRepo.save(board);
+            return Response.createSuccessfulResponse(type);
+        }
+
+        return Response.createFailureResponse("Can not remove type since it does not exist in board");
+
     }
 
     /**
      *
+     * @param user
      * @param boardId
      * @return
      */
-    public Response<Board> getBoard(long boardId){
+    public Response<Board> getBoard(User user, long boardId) {
         Optional<Board> board = boardRepo.findById(boardId);
-
-        return board.map(Response::createSuccessfulResponse).orElseGet(() -> Response.createFailureResponse("Board does not exist"));
+        if(board.isPresent() && userExistsInBoard(board.get(), user).isSucceed()){
+            return Response.createSuccessfulResponse(board.get());
+        }
+        return Response.createFailureResponse("Can not get board");
     }
 
     //todo: check again
-    public Response<String> typeExistsInBoard(Board board, String type){
+    public Response<String> typeExistsInBoard(Board board, String type) {
         return board.getTypes().contains(type) ? Response.createSuccessfulResponse(type)
                 : Response.createFailureResponse("Type does not exist");
     }
 
-    public Response<String> statusExistsInBoard(Board board, String status){
-
+    public Response<String> statusExistsInBoard(Board board, String status) {
+        if(board == null) {
+            return Response.createFailureResponse("Board is null");
+        }
         return board.getStatuses().contains(status) ? Response.createSuccessfulResponse(status)
                 : Response.createFailureResponse("Status does not exist");
     }
 
-    public Response<UserRole> userExistsInBoard(Board board, User user){
-        if(board == null || !boardRepo.findById(board.getId()).isPresent()){
+    public Response<UserRole> userExistsInBoard(Board board, User user) {
+        if (board == null || !boardRepo.findById(board.getId()).isPresent()) {
             return Response.createFailureResponse("Board does not exist");
         }
 
@@ -158,24 +191,30 @@ public class BoardService {
         return board.getUserRoleInBoard(user) != null ? Response.createSuccessfulResponse(userRole) :
                 Response.createFailureResponse("User does not exist in board");
     }
-//todo check validation
-    public Response<String> assignUserRole(long boardId, User user, UserRole role){
-        Optional<Board> optionalBoard = boardRepo.findById(boardId);
-        if(!optionalBoard.isPresent()){
-            return Response.createFailureResponse("Can not assign user to board - board does not exist");
+
+    //todo check validation
+    public Response<String> assignUserRole(Board board, User user, UserRole role) {
+//        Optional<Board> optionalBoard = boardRepo.findById(boardId);
+//        if (!optionalBoard.isPresent()) {
+//            return Response.createFailureResponse("Can not assign user to board - board does not exist");
+//        }
+//
+//        Board board = optionalBoard.get();
+        if(board == null){
+            return Response.createFailureResponse("Can not assign user to board- board is null");
         }
 
-        Board board = optionalBoard.get();
-        if(board.getAdmin().equals(user)){
+        if (board.getAdmin().equals(user)) {
             return Response.createFailureResponse(String.format("%s is the admin (creator) of the board - can not change the role of this user", user.getName()));
         }
+
         board.addUserRole(user, role);
         boardRepo.save(board);
 
         return Response.createSuccessfulResponse(String.format("Assigned role %s to user %s", role.name(), user.getName()));
     }
 
-    public Response<String> removeUserRole(long boardId, User user){
+    public Response<String> removeUserRole(long boardId, User user) {
         Board board = boardRepo.findById(boardId).get();
         board.removeUserRole(user);
         boardRepo.save(board);
@@ -193,7 +232,11 @@ public class BoardService {
         return Response.createSuccessfulResponse(ListBoards);
     }
 
+    public Set<Long> getAllUsersInBoardByBoardId(long boardId) {
+        Optional<Board> boardOptional = getBoardById(boardId);
 
+        return boardOptional.map(board -> board.getUserRole().keySet().stream().map(User::getId).collect(Collectors.toSet())).orElse(null);
+    }
 
 
 //    public Response<Board> delete(long boardId){

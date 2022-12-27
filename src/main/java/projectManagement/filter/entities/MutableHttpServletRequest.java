@@ -1,21 +1,31 @@
 package projectManagement.filter.entities;
+
+import projectManagement.entities.User;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.*;
 
 public class MutableHttpServletRequest extends HttpServletRequestWrapper {
     private final Map<String, String> customHeaders;
+
     public MutableHttpServletRequest(HttpServletRequest request) {
         super(request);
-        customHeaders=new HashMap<>();
+        customHeaders = new HashMap<>();
     }
 
     public String getHeader(String name) {
         String headerValue = customHeaders.get(name);
-        if (headerValue != null){
+        if (headerValue != null) {
             return headerValue;
         }
         return ((HttpServletRequest) getRequest()).getHeader(name);
+    }
+
+    public User getUserAttribute() {
+        Object attributeUser = this.getAttribute("user");
+
+        return attributeUser instanceof User ? (User) attributeUser : null;
     }
 
     public Enumeration<String> getHeaderNames() {
