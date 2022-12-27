@@ -46,6 +46,6 @@ public class NotificationControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, notificationController.getNotificationByUser(null).getStatusCode());
 
     }
-    
+
 
 }
