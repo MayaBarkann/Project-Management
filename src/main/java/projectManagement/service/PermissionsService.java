@@ -1,6 +1,7 @@
 package projectManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.UserRepo;
@@ -8,6 +9,7 @@ import projectManagement.repository.UserRepo;
 import java.util.Optional;
 
 @Service
+
 public class PermissionsService {
     UserRepo userRepo;
     BoardRepo boardRepo;
@@ -18,6 +20,7 @@ public class PermissionsService {
         this.boardRepo = boardRepo;
     }
 
+    @Transactional
     public Response<Board> checkPermission(long userId, long boardId, String methodName) {
         Optional<User> user = userRepo.findById(userId);
         Optional<Board> board = boardRepo.findById(boardId);
@@ -29,6 +32,7 @@ public class PermissionsService {
             return Response.createFailureResponse("Invalid method name");
         }
 
+        System.out.println(action);
         if (!user.isPresent()) {
             return Response.createFailureResponse(String.format("User with id: %d does not exist", userId));
         }

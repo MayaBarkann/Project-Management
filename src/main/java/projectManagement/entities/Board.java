@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class Board {
     private User admin;
 
     @Column(nullable = false)
-    @ElementCollection()
+    @ElementCollection(fetch = FetchType.EAGER)
     @MapKeyJoinColumn(name="user")
     private Map<User, UserRole> userRole = new HashMap<>();
 
@@ -40,11 +41,11 @@ public class Board {
     private Set<Item> items = new HashSet<>();
 
     @Column(nullable = false)
-    @ElementCollection()
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> statuses = new HashSet<>();
 
     @Column(nullable = false)
-    @ElementCollection()
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> types = new HashSet<>();
 
     public Board(String title, User admin) {
@@ -95,7 +96,11 @@ public class Board {
         return this.types;
     }
 
+
+    @Transactional
     public UserRole getUserRoleInBoard(User user){
+        System.out.println(this.userRole.size());
+        System.out.println(this.userRole.get(user));
         return this.userRole.get(user);
     }
 

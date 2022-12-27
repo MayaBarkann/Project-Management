@@ -15,7 +15,7 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 @Component
-@Order(1)
+@Order(0)
 public class CoreFilter implements Filter{
 
         private Set<String> origins = new HashSet<>(Set.of("http://localhost:3000"));

@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import projectManagement.controller.entities.BoardDTO;
 import projectManagement.controller.entities.LoginBoardDTO;
 import projectManagement.entities.*;
@@ -160,6 +161,7 @@ public class BoardService {
      * @param boardId
      * @return
      */
+    @Transactional
     public Response<Board> getBoard(User user, long boardId) {
         Optional<Board> board = boardRepo.findById(boardId);
         if(board.isPresent() && userExistsInBoard(board.get(), user).isSucceed()){

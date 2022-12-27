@@ -15,11 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@Order(2)
+@Order(1)
 public class TokenFilterN implements Filter {
     public static final Logger logger = LogManager.getLogger(TokenFilterN.class);
     private final AuthService authService;
-    private static final String pattern = "^/auth/.*$";
+    private static final String[] pattern = {"^/auth/.*$", "^/ws/.*$"};
 
     public TokenFilterN(AuthService authService) {
         this.authService = authService;
@@ -40,7 +40,7 @@ public class TokenFilterN implements Filter {
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        logger.info("Auth filter is working on the following request: " + servletRequest);
+//        logger.info("Auth filter is working on the following request: " + servletRequest);
 //        Pattern pattern = Pattern.compile();
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         String requestUrl = httpRequest.getRequestURI();
@@ -50,7 +50,10 @@ public class TokenFilterN implements Filter {
 //            System.out.println("here");
 //            filterChain.doFilter(req, res);
 //        }
-        if(!requestUrl.matches(pattern)){
+        if (requestUrl.matches(pattern[0]) || requestUrl.matches(pattern[1])) {
+            filterChain.doFilter(req, res);
+//            servletResponse.getOutputStream().write("token is null".getBytes());
+        } else {
             System.out.println(req.getRequestURL().toString());
             String authToken = req.getHeader("Authorization");
             if (authToken != null) {
@@ -64,12 +67,6 @@ public class TokenFilterN implements Filter {
                     return;
                 }
             }
-
-            servletResponse.getOutputStream().write("token is null".getBytes());
-
-        } else{
-
-            filterChain.doFilter(req, res);
         }
 
     }
