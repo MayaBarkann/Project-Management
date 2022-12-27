@@ -24,6 +24,7 @@ public class Validation {
     public static boolean validateInputRegister(UserRequest user) {
         logger.info("in Validations -> validateInputRegister"+user.toString());
         return  validate(Regex.EMAIL.getRegex(), user.getEmail()) &&
+                validate(Regex.NAME.getRegex(), user.getName()) &&
                 validate(Regex.PASSWORD.getRegex(), user.getPassword());
     }
     public static boolean validateInputLogin(UserRequest user) {

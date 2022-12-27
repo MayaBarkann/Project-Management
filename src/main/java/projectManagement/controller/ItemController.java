@@ -274,4 +274,16 @@ public class ItemController {
     }
 
 
+    @PostMapping("create-subItem")
+    public ResponseEntity<String> createSubItem(@RequestAttribute User user,@RequestParam long parentItemId, @RequestBody String title){
+        Optional<Item> optionalItem = itemService.getItem(parentItemId);
+        if(!optionalItem.isPresent()){
+            return ResponseEntity.badRequest().body("parentItemId does not exist");
+        }
+        Item parentItem = optionalItem.get();
+        Response<Item> response = itemService.createSubItem(title, parentItem.getStatus(), user, parentItem.getBoard(),parentItem);
+        //todo: add live update
+        return response.isSucceed() ? ResponseEntity.ok("Sub Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
 }

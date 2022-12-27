@@ -5,8 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.BoardDTO;
+import projectManagement.controller.entities.LoginBoardDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -179,6 +183,15 @@ public class BoardService {
     }
 
 
+    public Response<List<LoginBoardDTO>> getBoards(User user){
+        List<LoginBoardDTO> ListBoards = new ArrayList<>();
+        for ( Board board: boardRepo.findAll()) {
+            if(board.getUserRole().containsKey(user)){
+                ListBoards.add(LoginBoardDTO.createLoginBoardDTOFromBoard(board));
+            }
+        }
+        return Response.createSuccessfulResponse(ListBoards);
+    }
 
 
 
