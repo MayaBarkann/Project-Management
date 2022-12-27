@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -12,6 +13,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class Notification {
 
     @Id
@@ -19,9 +21,11 @@ public class Notification {
     private long id;
 
 
-    @OneToOne()
-//    @JoinColumn(name = "user", nullable = false)
-    @JoinColumn(nullable = false)
+
+
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
 
