@@ -38,7 +38,7 @@ public class NotificationService {
 
         Notification notification = notificationRepo.findByUser(user);
         if (notification == null) {
-            Response.createFailureResponse("can't find a notifications");
+            return Response.createFailureResponse("can't find a notifications");
         }
         return Response.createSuccessfulResponse(notification);
 
