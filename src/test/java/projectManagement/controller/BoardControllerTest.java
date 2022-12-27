@@ -102,6 +102,7 @@ class BoardControllerTest {
         verify(socketsUtil).addBoardStatus(expectedResponse, board.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
+
     @Test
     void addStatus_Invalid_returnBadRequest() {
         Board board = new Board();
