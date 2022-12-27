@@ -229,6 +229,12 @@ public class BoardService {
         return Response.createSuccessfulResponse("Success");
     }
 
+//todo delete this
+    public Set<Long> getAllUsersInBoardByBoardId(long boardId) {
+        Optional<Board> boardOptional = getBoardById(boardId);
+        return boardOptional.map(board -> board.getUserRole().keySet().stream().map(User::getId).collect(Collectors.toSet())).orElse(null);
+    }
+
 
     public Response<List<LoginBoardDTO>> getBoards(User user){
         List<LoginBoardDTO> ListBoards = new ArrayList<>();
@@ -240,11 +246,7 @@ public class BoardService {
         return Response.createSuccessfulResponse(ListBoards);
     }
 
-    public Set<Long> getAllUsersInBoardByBoardId(long boardId) {
-        Optional<Board> boardOptional = getBoardById(boardId);
 
-        return boardOptional.map(board -> board.getUserRole().keySet().stream().map(User::getId).collect(Collectors.toSet())).orElse(null);
-    }
 
 
 
