@@ -161,8 +161,10 @@ public class BoardController {
     @GetMapping(value = "/get_board")
     public ResponseEntity<BoardDTO> getBoard(@RequestAttribute User user, @RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(user, boardId);
+        logger.info("in board controller - trying to get board");
         if (response.isSucceed()) {
-            return ResponseEntity.ok().body(BoardDTO.createBoardDTOFromBoard(response.getData()));
+            BoardDTO boardDTO = BoardDTO.createBoardDTOFromBoard(response.getData());
+            return ResponseEntity.ok().body(boardDTO);
         }
 
         return ResponseEntity.badRequest().body(null);

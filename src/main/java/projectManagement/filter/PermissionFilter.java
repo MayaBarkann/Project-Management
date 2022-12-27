@@ -18,11 +18,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@Order(3)
+@Order(2)
 public class PermissionFilter implements Filter {
     public static final Logger logger = LogManager.getLogger(PermissionFilter.class);
     PermissionsService permissionsService;
-    private static final String[] patterns = {"^/board/(filter|create_board|get_board|get_items).*$", "^/auth/.*$"};
+    private static final String[] patterns = {"^/board/(filter|create_board|get_board|get_items).*$", "^/auth/.*$", "^/ws/.*$"};
 
     public PermissionFilter(PermissionsService permissionsService){
         this.permissionsService = permissionsService;
@@ -45,7 +45,7 @@ public class PermissionFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         String requestUrl = httpRequest.getRequestURI();
 
-        if(requestUrl.matches(patterns[0]) || requestUrl.matches(patterns[1])){
+        if(requestUrl.matches(patterns[0]) || requestUrl.matches(patterns[1]) || requestUrl.matches(patterns[2])){
             filterChain.doFilter(req,res);
         }else{
             User user = req.getUserAttribute();

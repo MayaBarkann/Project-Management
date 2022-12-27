@@ -1,6 +1,7 @@
 package projectManagement.controller.entities;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import projectManagement.entities.Board;
 import projectManagement.entities.Item;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class BoardDTO {
     private String title;
     private Set<UserDTO> users = new HashSet<>();
