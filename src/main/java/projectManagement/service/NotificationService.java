@@ -1,16 +1,19 @@
 package projectManagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 //import projectManagement.controller.entities.CreateItemDTO;
+import projectManagement.controller.SocketsUtil;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.NotificationRepo;
 import projectManagement.repository.UserRepo;
+import projectManagement.utils.Email;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javax.mail.MessagingException;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 public class NotificationService {
@@ -20,6 +23,8 @@ public class NotificationService {
     UserRepo userRepo;
     @Autowired
     BoardRepo boardRepo;
+    @Autowired
+    SocketsUtil socketsUtil;
 
     public Response<Void> initNotifications(User user) {
 
@@ -86,14 +91,19 @@ public class NotificationService {
 
     public void sendMails(Long boardId, NotifyWhen notifyWhen, String content) {
         List<String> emails = checkEmailNotification(notifyWhen, boardId);
-        System.out.println(Arrays.toString(emails.toArray()));
+        for (String email : emails) {
+            try {
+                Email.send(email, content, "project management");
+            } catch (Exception e) {
+
+            }
+        }
 
 
     }
 
     //TODO
     public boolean checkPop(User user, NotifyWhen notifyWhen) {
-//        List<Notification> all = notificationRepo.findAll();
 
         Notification userNotification = notificationRepo.findByUser(user);
         switch (notifyWhen) {
@@ -132,4 +142,13 @@ public class NotificationService {
 
     }
 
+    public void sendNotification(Set<Long> allUsersInBoard, String notificationContent, long boardId, NotifyWhen notifyWhen) {
+        for (long userId : allUsersInBoard) {
+            Optional<User> user = userRepo.findById(userId);
+            if (checkPop(user.get(), notifyWhen)) {
+                socketsUtil.pushNotification(user.get().getId(), notificationContent);
+            }
+        }
+        sendMails(boardId, notifyWhen, notificationContent);
+    }
 }

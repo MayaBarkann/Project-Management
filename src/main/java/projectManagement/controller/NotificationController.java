@@ -51,4 +51,20 @@ public class NotificationController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+    @RequestMapping(value = "/get_user_notification", method = RequestMethod.GET)
+    public ResponseEntity<Response<Notification>> getNotificationByUser(@RequestParam Long userId) {
+
+        Optional<User> user = userService.getUser(userId);
+        if (!user.isPresent()) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("user not found"));
+        }
+        Response<Notification> res = notificationService.getNotificationsByUser(user.get());
+        if (res.isSucceed()) {
+            return ResponseEntity.ok().body(res);
+        } else {
+            return ResponseEntity.badRequest().body(res);
+        }
+    }
+
 }
