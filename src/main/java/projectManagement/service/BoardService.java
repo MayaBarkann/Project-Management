@@ -5,9 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.BoardDTO;
+import projectManagement.controller.entities.LoginBoardDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -94,6 +97,7 @@ public class BoardService {
     }
 
     /**
+     *
      * @param status
      * @return
      */
@@ -215,6 +219,17 @@ public class BoardService {
         board.removeUserRole(user);
         boardRepo.save(board);
         return Response.createSuccessfulResponse("Success");
+    }
+
+
+    public Response<List<LoginBoardDTO>> getBoards(User user){
+        List<LoginBoardDTO> ListBoards = new ArrayList<>();
+        for ( Board board: boardRepo.findAll()) {
+            if(board.getUserRole().containsKey(user)){
+                ListBoards.add(LoginBoardDTO.createLoginBoardDTOFromBoard(board));
+            }
+        }
+        return Response.createSuccessfulResponse(ListBoards);
     }
 
     public Set<Long> getAllUsersInBoardByBoardId(long boardId) {

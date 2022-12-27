@@ -48,9 +48,11 @@ public class AuthService {
         }
         return false;
     }
+
     public void addTokenToUser(long userId, String token) {
         userToToken.put(userId, token);
     }
+
     public void removeTokenToUser(long userId) {
         userToToken.remove(userId);
     }
@@ -161,17 +163,24 @@ public class AuthService {
         GitUser githubUser = getGithubUser(code);
         try {
             if (githubUser != null && githubUser.getEmail() != null) {
-                if (!userRepo.findByEmail(githubUser.getEmail()).isPresent()) {
+                Optional<User> optionalUser = userRepo.findByEmail(githubUser.getEmail());
+                if (!optionalUser.isPresent()) {
                     logger.info("in AuthService -> loginGithub -> new login via github account");
-                    UserDTO user = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), ""), Provider.GITHUB);
+                    String name;
                     if (githubUser.getName() != "" && githubUser.getName() != null) {
-                        user.setName(githubUser.getName());
-                    }else {
-                        user.setName(githubUser.getEmail());
+                        name = githubUser.getName();
+                    } else {
+                        name = githubUser.getEmail();
                     }
+                    UserDTO user = createUser(new UserRequest(githubUser.getEmail(), githubUser.getLogin(), name), Provider.GITHUB);
                     String token = generateToken(user.getId());
                     addTokenToUser(user.getId(), token);
                     return Response.createSuccessfulResponse(new UserLoginDTO(user.getId(), token));
+                } else {
+                    logger.info("in AuthService -> loginGithub -> Second login via github account");
+                    String token = generateToken(optionalUser.get().getId());
+                    addTokenToUser(optionalUser.get().getId(), token);
+                    return Response.createSuccessfulResponse(new UserLoginDTO(optionalUser.get().getId(), token));
                 }
             }
             logger.error("in AuthService -> loginGithub -> cannot get user from code: getGithubUser(code)");
@@ -190,7 +199,7 @@ public class AuthService {
      * @return GitUser login; name; email; accessToken;
      */
     GitUser getGithubUser(String code) {
-        logger.info("in AuthService -> getGithubToken");
+        logger.info("in AuthService -> getGithubUser");
         GitToken gitTokenResponse = getGithubToken(code);
         if (gitTokenResponse != null) {
             try {

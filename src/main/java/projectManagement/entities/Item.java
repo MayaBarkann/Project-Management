@@ -36,7 +36,7 @@ public class Item {
 
     private LocalDate dueDate;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE,orphanRemoval = true)//remove
     private Set<Item> children;
 
     @JsonIncludeProperties(value = {"id"})
@@ -68,6 +68,12 @@ public class Item {
         this.status = status;
         this.board = board;
         this.creator = creator;
+    }
+
+    public static Item createItemFromParent(String title, String status, Board board, User creator,Item parent) {
+        Item item = new Item(title,status,board,creator);
+        item.parent = parent;
+        return item;
     }
 
 

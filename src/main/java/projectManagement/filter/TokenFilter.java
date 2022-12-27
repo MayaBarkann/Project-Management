@@ -7,6 +7,7 @@
 //import javax.servlet.http.HttpServletRequest;
 //import javax.servlet.http.HttpServletResponse;
 //import java.io.IOException;
+//import java.util.Optional;
 //
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
@@ -15,6 +16,7 @@
 //import org.springframework.web.filter.GenericFilterBean;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.http.HttpMethod;
+//import projectManagement.entities.User;
 //import projectManagement.service.AuthService;
 //
 //@Component
@@ -41,7 +43,6 @@
 //        if (!url.contains("auth") && !url.contains("ws") && !url.contains("error") && !httpRequest.getMethod().equals(HttpMethod.OPTIONS.toString())) {
 //            if (httpRequest.getHeader("Authorization") != null) {
 //                String token = httpRequest.getHeader("Authorization");
-//                System.out.println(token);
 //                if (token == null) {
 //                    logger.error("in AuthorizationFilter -> doFilter -> token is null");
 //                    ((HttpServletResponse) response).setStatus(400);
@@ -50,8 +51,9 @@
 //                }
 //                try {
 //                    Long userId = authService.checkTokenToUserInDB(token);
-//                    if(authService.checkTokenIsReal(userId,token)) {
-//                        request.setAttribute("User", authService.getUser(userId));
+//                    Optional<User> user = authService.getUser(userId);
+//                    if(authService.checkTokenIsReal(userId,token) && user.isPresent()) {
+//                        request.setAttribute("user", user.get());
 //                    }else {
 //                        logger.error("in AuthorizationFilter -> doFilter -> Invalid Token.");
 //                        ((HttpServletResponse) response).setStatus(400);
