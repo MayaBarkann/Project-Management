@@ -1,5 +1,6 @@
 package projectManagement.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -52,7 +53,9 @@ public class User {
 //    private Set<Comment> commentedUsers;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+//    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
+    @JsonIgnore
     Notification userNotification;
 
     public User(String name, String email, String password) {
