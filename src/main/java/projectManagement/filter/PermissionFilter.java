@@ -16,13 +16,14 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @Component
 @Order(2)
 public class PermissionFilter implements Filter {
     public static final Logger logger = LogManager.getLogger(PermissionFilter.class);
     PermissionsService permissionsService;
-    private static final String[] patterns = {"^/board/(filter|create_board|get_board|get_items).*$", "^/auth/.*$", "^/ws/.*$"};
+    private static final String pattern = "(^/board/(filter|create_board|get_board|get_items).*$)|(^/auth/.*$)|(^/ws/.*$)|(^/user/get_boards.*$)";
 
     public PermissionFilter(PermissionsService permissionsService){
         this.permissionsService = permissionsService;
@@ -45,9 +46,9 @@ public class PermissionFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         String requestUrl = httpRequest.getRequestURI();
 
-        if(requestUrl.matches(patterns[0]) || requestUrl.matches(patterns[1]) || requestUrl.matches(patterns[2])){
+        if(requestUrl.matches(pattern)) {
             filterChain.doFilter(req,res);
-        }else{
+        } else {
             User user = req.getUserAttribute();
             String boardIdStr = servletRequest.getParameter("boardId");
             if (user != null || boardIdStr != null) {
@@ -67,7 +68,6 @@ public class PermissionFilter implements Filter {
                     servletResponse.getOutputStream().write(e.getMessage().getBytes());
                     return;
                 }
-
             }
 
             servletResponse.getOutputStream().write("board not found".getBytes());
