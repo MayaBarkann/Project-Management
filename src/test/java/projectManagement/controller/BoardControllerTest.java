@@ -11,15 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import projectManagement.controller.entities.AddUserRoleDTO;
 import projectManagement.controller.entities.BoardDTO;
-import projectManagement.entities.Board;
-import projectManagement.entities.Response;
-import projectManagement.entities.User;
-import projectManagement.entities.UserRole;
+import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -187,4 +187,37 @@ class BoardControllerTest {
         ResponseEntity<String> responseEntity = boardController.assignRoleToUser(board,new AddUserRoleDTO("dvir@gmail.com", UserRole.USER));
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
+
+    @Test
+    public void testGetItems_Success() {
+        Board board = new Board();
+        Item item1 = new Item();//itemService.createItem("new","stat",user,board).getData();
+        Item item2 =new Item();// itemService.createItem("new2","stat",user,board).getData();
+        Set<Item> items = new HashSet<>(Arrays.asList(item1, item2));
+        board.setItems(items);
+        given(boardService.getItems(user, board.getId())).willReturn(Response.createSuccessfulResponse(items));
+        ResponseEntity<Response<Set<Item>>> response = boardController.getItems(user, board.getId());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(items, response.getBody().getData());
+    }
+    @Test
+    public void testGetItems_emptyList_Success() {
+        Board board = new Board();
+        Set<Item> items = new HashSet<>();
+        board.setItems(items);
+        given(boardService.getItems(user, board.getId())).willReturn(Response.createSuccessfulResponse(items));
+        ResponseEntity<Response<Set<Item>>> response = boardController.getItems(user, board.getId());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(items.size(), response.getBody().getData().size());
+    }
+    @Test
+    public void testGetItems_Failure() {
+        Board board = new Board();
+        given(boardService.getItems(user, board.getId())).willReturn(Response.createFailureResponse("Error getting items"));
+        ResponseEntity<Response<Set<Item>>> response = boardController.getItems(user, board.getId());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Error getting items", response.getBody().getMessage());
+    }
+
+
 }

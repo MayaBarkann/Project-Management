@@ -36,6 +36,7 @@ public class BoardController {
     /***
      * This method filters item of the given board by given properties and values.
      * It returns all the items with exact match to all properties and their values (if the value is not null) in the given filter.
+     *
      * @param boardId - the id of the board we want to perform the filter on
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
      * @return response entity containing the items that match the filter
@@ -49,16 +50,13 @@ public class BoardController {
             logger.error("In BoardController - can not perform the filter since the board does not exist");
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Board does not exist"));
         }
-
         if (filter == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Null pointer- can not perform filter"));
         }
-
         Response<UserRole> userExistsInBoard = boardService.userExistsInBoard(board.get(), user);
-        if(!userExistsInBoard.isSucceed()){
+        if (!userExistsInBoard.isSucceed()) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse(userExistsInBoard.getMessage()));
         }
-
         //todo: go back and change the response
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
@@ -66,15 +64,15 @@ public class BoardController {
     /**
      * This method creates a new board with the given user as the admin.
      *
-     * @param user the admin of the new board
-     * @param title  the title of the new board
+     * @param user  the admin of the new board
+     * @param title the title of the new board
      * @return Response entity with successful response containing the new created board if the given user exists,
      * otherwise returns bad request with the reason.
      */
     @PostMapping("/create_board")
-    public ResponseEntity<Response<Board>> createBoard(@RequestAttribute User user , @RequestBody String title) {
+    public ResponseEntity<Response<Board>> createBoard(@RequestAttribute User user, @RequestBody String title) {
         logger.info("In BoardController - creating new board");
-        if(title==null || title.equals("")){
+        if (title == null || title.equals("")) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("Title must not be empty"));
         }
         return ResponseEntity.ok().body(boardService.createBoard(title, user));
@@ -90,7 +88,7 @@ public class BoardController {
      */
     //todo: add live changes
     @PostMapping("/add_type")
-    public ResponseEntity<String> addType(@RequestAttribute Board board , @RequestBody String type) {
+    public ResponseEntity<String> addType(@RequestAttribute Board board, @RequestBody String type) {
         Response<String> response = boardService.addType(board, type);
         if (response.isSucceed()) {
             socketsUtil.addBoardType(response, board.getId());
@@ -125,7 +123,7 @@ public class BoardController {
      * This method removes the given status from board and deletes all items with this status
      *
      * @param board
-     * @param status  the status we want to remove
+     * @param status the status we want to remove
      * @return
      */
     //todo: remove boardId since it seems redundant
@@ -143,7 +141,13 @@ public class BoardController {
 
     }
 
-
+    /**
+     * Removes a type from a board.
+     *
+     * @param board The board from which the type will be removed.
+     * @param type  The type to be removed from the board.
+     * @return A ResponseEntity object with a body containing a message about the success or failure of the operation. If the operation is successful, the ResponseEntity will have an HTTP status of 200 OK. If the operation fails, the ResponseEntity will have an HTTP status of 400 Bad Request.
+     */
     @DeleteMapping("/remove_type")
     public ResponseEntity<String> removeType(@RequestAttribute Board board, @RequestParam String type) {
         Response<String> response = boardService.removeType(board, type);
@@ -155,9 +159,15 @@ public class BoardController {
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
-
     }
 
+    /**
+     * This method retrieves a board for a given user.
+     *
+     * @param user    This is a request attribute that represents the user for whom the board will be retrieved.
+     * @param boardId This is a request parameter that represents the ID of the board to be retrieved.
+     * @return ResponseEntity object with a body that contains the requested board as a BoardDTO object
+     */
     @GetMapping(value = "/get_board")
     public ResponseEntity<BoardDTO> getBoard(@RequestAttribute User user, @RequestParam long boardId) {
         Response<Board> response = boardService.getBoard(user, boardId);
@@ -166,13 +176,20 @@ public class BoardController {
             BoardDTO boardDTO = BoardDTO.createBoardDTOFromBoard(response.getData());
             return ResponseEntity.ok().body(boardDTO);
         }
-
         return ResponseEntity.badRequest().body(null);
     }
 
+    /**
+     * This method assigns a role to a user for a given board.
+     *
+     * @param board       This is a request attribute that represents the board for which the user's role will be assigned.
+     * @param userRoleDTO This is a request body object that contains the following properties:
+     *                    email: The email of the user for whom the role will be assigned.
+     *                    role: The role to be assigned to the user.
+     * @return ResponseEntity object with a body that contains a message about the success or failure of the operation.
+     */
     @PostMapping(value = "/assign_role_to_user")
     public ResponseEntity<String> assignRoleToUser(@RequestAttribute Board board, @RequestBody AddUserRoleDTO userRoleDTO) {
-//        Response<Board> response = boardService.getBoard(boardId);
         Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
         if (!user.isPresent()) {
             return ResponseEntity.badRequest().body("Can not assign role to user - user does not exist");
@@ -181,6 +198,13 @@ public class BoardController {
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
     }
 
+    /**
+     * Retrieves the items for a given board.
+     *
+     * @param user    The user for whom the items will be retrieved.
+     * @param boardId The ID of the board for which the items will be retrieved.
+     * @return ResponseEntity object with a body containing the requested items as a Set of Item objects.
+     */
     @RequestMapping(value = "/get_items", method = RequestMethod.GET)
     public ResponseEntity<Response<Set<Item>>> getItems(@RequestAttribute User user, @RequestParam long boardId) {
         Response<Set<Item>> responseGetItems = boardService.getItems(user, boardId);
