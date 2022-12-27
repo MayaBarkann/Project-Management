@@ -113,7 +113,7 @@ public class ItemController {
             return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
-        Response<Item> response = itemService.changeStatus(itemId, status, board);
+        Response<Item> response = itemService.changeStatus(itemId, status,board);
         if (response.isSucceed()) {
 
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());

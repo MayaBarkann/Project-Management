@@ -88,6 +88,5 @@ public class AuthController {
         logger.info("in AuthController -> loginGithub");
         Response<UserLoginDTO> response = authService.loginGithub(code);
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-
     }
 }

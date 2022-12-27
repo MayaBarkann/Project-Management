@@ -36,6 +36,10 @@ public class BoardService {
      * @return the new created board
      */
     public Response<Board> createBoard(String title, User admin) {
+        if(title== null || title.equals("") || admin ==null ){
+            logger.error("In BoardService - failed to create new Board since title is empty or null");
+            return Response.createFailureResponse("Can not create empty Board");
+        }
         Board newBoard = boardRepo.save(new Board(title, admin));
 
         return Response.createSuccessfulResponse(newBoard);
@@ -79,11 +83,9 @@ public class BoardService {
             logger.error("In BoardService - failed to create new type since it is empty or null");
             return Response.createFailureResponse("Can not create empty type");
         }
-
         if(board == null){
             return Response.createFailureResponse("Board can not be null");
         }
-
 //        Optional<Board> board = getBoardById(boardId);
 //        if (!board.isPresent()) {
 //            logger.error("In BoardService - failed to create new type, board does not exist");
@@ -121,9 +123,7 @@ public class BoardService {
             boardRepo.save(board);
             return Response.createSuccessfulResponse(status);
         }
-
         return Response.createFailureResponse("Can not remove status since it does not exist in board");
-
     }
 
 
@@ -214,8 +214,10 @@ public class BoardService {
         return Response.createSuccessfulResponse(String.format("Assigned role %s to user %s", role.name(), user.getName()));
     }
 
-    public Response<String> removeUserRole(long boardId, User user) {
-        Board board = boardRepo.findById(boardId).get();
+    public Response<String> removeUserRole(Board board, User user) {
+        if(board == null){
+            return Response.createFailureResponse("Can not remove user to board- board is null");
+        }
         board.removeUserRole(user);
         boardRepo.save(board);
         return Response.createSuccessfulResponse("Success");

@@ -83,10 +83,10 @@ class AuthControllerTest {
 
     @Test
     void loginGithub_badCode_createFailureResponse() {
-        given(authService.loginGithub("rany is the goat")).willReturn(Response.createSuccessfulResponse(userLoginDTO));
+        given(authService.loginGithub("rany is the goat")).willReturn(Response.createFailureResponse("userLoginDTO"));
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("http://localhost:3000"));
-        assertEquals(new ResponseEntity<Response<UserLoginDTO>>(Response.createFailureResponse(""),headers,HttpStatus.MOVED_PERMANENTLY).getStatusCode(),
+        assertEquals(ResponseEntity.badRequest().body("").getStatusCode(),
                 authController.loginGithub("rany is the goat").getStatusCode(), "login with github bad code did not return createSuccessfulResponse");
    }
 
