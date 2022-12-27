@@ -15,10 +15,10 @@ public class SocketsUtil {
     }
 
 
-    public Response createItem(Response response, long boardId) {
+    public void createItem(Response response, long boardId) {
         System.out.println("Sending item update" + response);
         template.convertAndSend("/topic/createItem/" + boardId, response.getData());
-        return response;
+
     }
 
     public void updateItem(Item item, Long BoardId) {
@@ -33,34 +33,34 @@ public class SocketsUtil {
     }
 
 
-    public Response deleteItem(Response response, long boardId) {
+    public void deleteItem(Response response, long boardId) {
         System.out.println("Sending item update" + response);
         template.convertAndSend("/topic/deleteItem/" + boardId, response.getData());
-        return response;
+
     }
 
-    public Response addBoardType(Response response, long boardId) {
+    public void addBoardType(Response response, long boardId) {
         System.out.println("board type added: " + response);
         template.convertAndSend("/topic/addBoardType/" + boardId, response.getData());
-        return response;
+
     }
 
-    public Response deleteBoardType(Response response, long boardId) {
+    public void deleteBoardType(Response response, long boardId) {
         System.out.println("board type added: " + response);
         template.convertAndSend("/topic/deleteBoardType/" + boardId, response.getData());
-        return response;
+
     }
 
-    public Response addBoardStatus(Response response, long boardId) {
+    public void addBoardStatus(Response response, long boardId) {
         System.out.println("board status added: " + response);
         template.convertAndSend("/topic/addBoardStatus/" + boardId, response.getData());
-        return response;
+
     }
 
-    public Response deleteBoardStatus(Response response, long boardId) {
+    public void deleteBoardStatus(Response response, long boardId) {
         System.out.println("board type added: " + response);
         template.convertAndSend("/topic/deleteBoardStatus/" + boardId, response.getData());
-        return response;
+
     }
 
 }
