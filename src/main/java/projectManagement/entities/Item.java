@@ -60,7 +60,7 @@ public class Item {
     private User creator;
 
     @JsonIncludeProperties(value = {"id", "comment", "commentedUser", "dateTime"})
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Comment> comments;
 
     public Item(String title, String status, Board board, User creator) {
