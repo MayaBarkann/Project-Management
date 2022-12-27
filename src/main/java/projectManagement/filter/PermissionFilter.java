@@ -22,7 +22,7 @@ import java.io.IOException;
 public class PermissionFilter implements Filter {
     public static final Logger logger = LogManager.getLogger(PermissionFilter.class);
     PermissionsService permissionsService;
-    private static final String[] patterns = {"^/board/(filter|create-board|get-board).*$", "^/auth/.*$"};
+    private static final String[] patterns = {"^/board/(filter|create_board|get_board).*$", "^/auth/.*$"};
 
     public PermissionFilter(PermissionsService permissionsService){
         this.permissionsService = permissionsService;
@@ -55,7 +55,7 @@ public class PermissionFilter implements Filter {
                     long boardId = Long.parseLong(boardIdStr);
                     String methodName = getMethodNameFromUrl(servletRequest);
                     System.out.println("In permission filter -> method : " + methodName);
-                    Response<Board> hasPermissionResponse = permissionsService.checkPermission(user.getId(), boardId, methodName);
+                    Response<Board> hasPermissionResponse = permissionsService.checkPermission(user.getId(), boardId, methodName.toUpperCase());
                     if(hasPermissionResponse.isSucceed()) {
                         req.setAttribute("board", hasPermissionResponse.getData());
                         filterChain.doFilter(req,res);

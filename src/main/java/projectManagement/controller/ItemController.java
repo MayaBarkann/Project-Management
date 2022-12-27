@@ -71,10 +71,10 @@ public class ItemController {
 
 
     @DeleteMapping(value = "/delete_item")
-    public ResponseEntity<String> deleteItem(@RequestAttribute User user, @RequestParam long boardId, @RequestParam long itemId) {
-        Response<Item> response = itemService.deleteItem(itemId);
+    public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
+        Response<Item> response = itemService.deleteItem(itemId, board);
         if (response.isSucceed()) {
-            socketsUtil.deleteItem(response, response.getData().getBoard().getId());
+            socketsUtil.deleteItem(response, board.getId());
             return ResponseEntity.ok().body("Item was deleted successfully");
 
         } else {
@@ -83,44 +83,33 @@ public class ItemController {
     }
 
 
-    @PutMapping("/change_type")
-    public ResponseEntity<String> changeType(@RequestParam long itemId, @RequestBody String type) {
+    @PutMapping("/change_item_type")
+    public ResponseEntity<String> changeType(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String type) {
         if (type == null) {
             return ResponseEntity.badRequest().body("Can not update type - type is null");
         }
 
-        Optional<Item> item = itemService.getItem(itemId);
-        if (!item.isPresent()) {
-            return ResponseEntity.badRequest().body("Can not update type - Item does not exist");
-        }
-
-        Response<String> responseType = boardService.typeExistsInBoard(item.get().getBoard(), type);
+        Response<String> responseType = boardService.typeExistsInBoard(board, type);
 
         if (!responseType.isSucceed()) {
             return ResponseEntity.badRequest().body(responseType.getMessage());
         }
 
-        Response<Item> response = itemService.changeType(itemId, type);
+        Response<Item> response = itemService.changeType(itemId, type, board);
         if (response.isSucceed()) {
-            //TODO check this one
-            socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
-
-            return ResponseEntity.ok().body("Type changed successfully");
-        } else {
-            return ResponseEntity.badRequest().body(response.getMessage());
+                //TODO check this one
+                socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+                return ResponseEntity.ok().body("Type changed successfully");
         }
 
+        return ResponseEntity.badRequest().body(response.getMessage());
     }
 
 
-    @PutMapping("/change_status")
-    public ResponseEntity<String> changeStatus(@RequestParam long itemId, @RequestBody String status) {
-        Optional<Item> item = itemService.getItem(itemId);
-        if (!item.isPresent()) {
-            return ResponseEntity.badRequest().body("Can not update status - Item does not exist");
-        }
+    @PutMapping("/change_item_status")
+    public ResponseEntity<String> changeStatus(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String status) {
 
-        if (!boardService.statusExistsInBoard(item.get().getBoard(), status).isSucceed()) {
+        if (!boardService.statusExistsInBoard(board, status).isSucceed()) {
             return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
@@ -153,7 +142,7 @@ public class ItemController {
      * @param description
      * @return
      */
-    @PutMapping("/change_description")
+    @PutMapping("/change_item_description")
     public ResponseEntity<String> changeItemDescription(@RequestParam long itemId, @RequestBody String description) {
         Response<Item> response = itemService.changeDescription(itemId, description);
         if (response.isSucceed()) {
@@ -166,7 +155,7 @@ public class ItemController {
     }
 
     //todo
-    @PutMapping("/change_assign_to_user")
+    @PutMapping("/change_item_assign_to_user")
     public ResponseEntity<Response<Item>> changeAssignToUser(@RequestParam long itemId, @RequestBody long userId) {
         Optional<User> assignedUser = userService.getUser(userId);
         if (!assignedUser.isPresent()) {
