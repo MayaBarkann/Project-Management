@@ -60,7 +60,7 @@ public class ItemController {
         }
 
         Response<Item> createdItemResponse = itemService.createItem(item.getTitle(), item.getStatus(), user, board);
-        if(createdItemResponse.isSucceed()){
+        if (createdItemResponse.isSucceed()) {
             socketsUtil.createItem(createdItemResponse, board.getId());
             return ResponseEntity.ok().body(createdItemResponse.getMessage());
         }
@@ -98,9 +98,9 @@ public class ItemController {
 
         Response<Item> response = itemService.changeType(itemId, type, board);
         if (response.isSucceed()) {
-                //TODO check this one
-                socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
-                return ResponseEntity.ok().body("Type changed successfully");
+            //TODO check this one
+            socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+            return ResponseEntity.ok().body("Type changed successfully");
         }
 
         return ResponseEntity.badRequest().body(response.getMessage());
@@ -120,21 +120,9 @@ public class ItemController {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             //TODO this should be changed to user in board.
 
-            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(response.getData().getBoard().getId());
-
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
-            for (long userId : allUsersInBoard) {
-                Optional<User> user = userService.getUser(userId);
-                if (!user.isPresent()) {
-                    return ResponseEntity.badRequest().body("user not found");
-                }
-                if (notificationService.checkPop(user.get(), NotifyWhen.ITEM_STATUS_CHANGED)) {
-                    socketsUtil.pushNotification(user.get().getId(), notificationContent);
-                }
-            }
-
-            notificationService.sendMails(response.getData().getBoard().getId(), NotifyWhen.ITEM_STATUS_CHANGED, notificationContent);
-
+            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_STATUS_CHANGED);
 
             return ResponseEntity.ok().body("Status changed successfully");
         } else {
@@ -211,6 +199,9 @@ public class ItemController {
         //todo: add live update
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
+            String notificationContent = "add comment" + response.getData().getTitle() + " new comment is added " + commentStr;
+            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_COMMENT_ADDED);
             return ResponseEntity.ok().body("Added comment successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -246,13 +237,13 @@ public class ItemController {
 
 
     @PostMapping("create_sub_item")
-    public ResponseEntity<String> createSubItem(@RequestAttribute User user, @RequestAttribute Board board, @RequestParam long parentItemId, @RequestBody String title){
+    public ResponseEntity<String> createSubItem(@RequestAttribute User user, @RequestAttribute Board board, @RequestParam long parentItemId, @RequestBody String title) {
 //        Optional<Item> optionalItem = itemService.getItem(parentItemId);
 //        if(!optionalItem.isPresent()){
 //            return ResponseEntity.badRequest().body("parentItemId does not exist");
 //        }
 //        Item parentItem = optionalItem.get();
-        Response<Item> response = itemService.createSubItem(title,  user, board ,parentItemId);
+        Response<Item> response = itemService.createSubItem(title, user, board, parentItemId);
         //todo: add live update
         return response.isSucceed() ? ResponseEntity.ok("Sub Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
     }
