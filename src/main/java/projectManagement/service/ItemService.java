@@ -70,6 +70,10 @@ public class ItemService {
         if (!optItem.isPresent()) {
             return Response.createFailureResponse("Item does not exist");
         }
+
+        if (!optItem.get().getBoard().equals(board)) {
+            return Response.createFailureResponse("Can not change status, item does not exist in board");
+        }
         Item item = optItem.get();
         item.setStatus(status);
         itemRepo.save(item);
