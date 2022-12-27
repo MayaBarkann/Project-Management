@@ -1,16 +1,11 @@
 package projectManagement.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
-
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -41,7 +36,7 @@ public class Item {
 
     private LocalDate dueDate;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)//remove
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE,orphanRemoval = true)//remove
     private Set<Item> children;
 
     @JsonIncludeProperties(value = {"id"})
@@ -73,6 +68,12 @@ public class Item {
         this.status = status;
         this.board = board;
         this.creator = creator;
+    }
+
+    public static Item createItemFromParent(String title, String status, Board board, User creator,Item parent) {
+        Item item = new Item(title,status,board,creator);
+        item.parent = parent;
+        return item;
     }
 
 

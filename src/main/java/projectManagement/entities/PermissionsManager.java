@@ -6,8 +6,8 @@ import java.util.Set;
 public class PermissionsManager {
     private static final Map<UserRole, Set<Action>> permissions=Map.of(
             UserRole.ADMIN, Set.of(Action.values()),
-            UserRole.LEADER,Set.of(Action.CREATE_ITEM, Action.ASSIGN_ITEM, Action.UPDATE_ITEM_STATUS),
-            UserRole.USER,Set.of(Action.UPDATE_ITEM_STATUS, Action.ADD_COMMENT)
+            UserRole.LEADER,Set.of(Action.CREATE_ITEM, Action.CREATE_SUB_ITEM, Action.CHANGE_ITEM_ASSIGN_TO_USER, Action.CHANGE_ITEM_STATUS),
+            UserRole.USER,Set.of(Action.CHANGE_ITEM_STATUS, Action.ADD_COMMENT)
     );
 
     /**

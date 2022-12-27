@@ -6,6 +6,7 @@ import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,69 +20,76 @@ public class ItemService {
     CommentRepo commentRepo;
 
 
-
-    public Response<Item> createItem(String title, String status, User creator, Board board){
+    public Response<Item> createItem(String title, String status, User creator, Board board) {
+        if (creator == null) {
+            return Response.createFailureResponse("Can not create item- creator user is null");
+        }
+        if (board == null) {
+            return Response.createFailureResponse("Can not create item- board  is null");
+        }
         return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status, board, creator)));
     }
 
-    public Response<Item> deleteItem(long itemId) {
-        Optional<Item> itemFound = itemRepo.findById(itemId);
-
-        if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("Item doesn't exist");
+    public Response<Item> deleteItem(long itemId, Board board) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
 
         itemRepo.deleteById(itemId);
-        return Response.createSuccessfulResponse(itemFound.get());
+        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
     }
 
-    public Response<Item> changeType(long itemId, String type) {
-        Optional<Item> optItem = itemRepo.findById(itemId);
-        if(!optItem.isPresent()){
-            return Response.createFailureResponse("Item does not exist");
+    public Response<Item> changeType(long itemId, String type, Board board) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change type");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
-        Item item = optItem.get();
+
+        Item item = itemExistsInBoardResponse.getData();
         item.setType(type);
         itemRepo.save(item);
 
-        //todo: add live update
         return Response.createSuccessfulResponse(item);
-
     }
 
-    public Response<Item> changeStatus(long itemId, String status){
-        Optional<Item> optItem = itemRepo.findById(itemId);
-
-        if(!optItem.isPresent()){
-            return Response.createFailureResponse("Item does not exist");
+    public Response<Item> changeStatus(long itemId, String status, Board board) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change status");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
-        Item item = optItem.get();
+
+        Item item = itemExistsInBoardResponse.getData();
         item.setStatus(status);
         itemRepo.save(item);
-
+        for (Item subItem : item.getChildren()) {
+            subItem.setStatus(item.getStatus());
+            itemRepo.save(subItem);
+        }
         //todo: add live update
         return Response.createSuccessfulResponse(item);
     }
 
-    public Response<Item> changeDescription(long itemId, String description) {
-        Optional<Item> item = itemRepo.findById(itemId);
-        if(!item.isPresent()){
-            return Response.createFailureResponse("Can not update description- item does not exist");
+    public Response<Item> changeDescription(long itemId, String description, Board board) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change description");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
 
-        Item updateItem = item.get();
-        updateItem.setDescription(description);
+        Item item = itemExistsInBoardResponse.getData();
+        item.setDescription(description);
 
-        return Response.createSuccessfulResponse(itemRepo.save(updateItem));
+        return Response.createSuccessfulResponse(itemRepo.save(item));
     }
 
 
-    public Response<Item> changeAssignedToUser(Long itemId, User assignedToUser) {
-        Optional<Item> itemFound = itemRepo.findById(itemId);
-        if (!itemFound.isPresent()) {
-            return Response.createFailureResponse("the item doesn't exist");
+    public Response<Item> changeAssignedToUser(long itemId, User assignedToUser, Board board) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change assigned user");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
-        Item item = itemFound.get();
+
+        Item item = itemExistsInBoardResponse.getData();
         item.setAssignedToUser(assignedToUser);
         item = itemRepo.save(item);
 
@@ -101,87 +109,65 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findAll(specification));
     }
 
-//    public Response<Comment> addComment(Item item, User user, String comment) {
-//        Comment commentObj = new Comment(comment, user, item, LocalDateTime.now());
-//        Comment savedComment = commentRepo.save(commentObj);
-//
-//
-//        return Response.createSuccessfulResponse(savedComment);
-//    }
 
-    public Response<Long> deleteComment(Long commentId) {
-        Optional<Comment> commentFound = commentRepo.findById(commentId);
-
-        if (!commentFound.isPresent()) {
-            return Response.createFailureResponse("the comment doesn't exist");
+    public Response<Item> addComment(long itemId, Board board, User user, String commentStr) {
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "add comment");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
 
-        commentRepo.deleteById(commentId);
-        return Response.createSuccessfulResponse(commentId);
-    }
-
-    public Response<Item> changeAssignedUser(long itemId, User user){
-        Optional<Item> optItem = itemRepo.findById(itemId);
-        if(!optItem.isPresent()){
-            return Response.createFailureResponse("Can not change assigned user - item does not exist");
-        }
-
-        Item item = optItem.get();
-        item.setAssignedToUser(user);
-        itemRepo.save(item);
-        //todo: add live update
-
-        return Response.createSuccessfulResponse(item);
-    }
-
-    public Response<Item> addComment(long itemId, long boardId, User user,  String commentStr){
-        Optional<Item> item = itemRepo.findById(itemId);
-        if(!item.isPresent()){
-            return Response.createFailureResponse("Item does not exist");
-        }
-
-        if(item.get().getBoard().getId() != boardId){
-            return Response.createFailureResponse("Item does not exist in board");
-        }
-
-        Comment comment = new Comment(commentStr, user, item.get(), LocalDateTime.now());
+        Item item = itemExistsInBoardResponse.getData();
+        Comment comment = new Comment(commentStr, user, item, LocalDateTime.now());
         commentRepo.save(comment);
 
-        return Response.createSuccessfulResponse(item.get());
+        return Response.createSuccessfulResponse(item);
 
     }
 
-    public Response<Item> deleteComment(long boardId, User user, long commentId){
+    public Response<Item> deleteComment(Board board, User user, long commentId) {
         Optional<Comment> comment = commentRepo.findById(commentId);
-        if(!comment.isPresent()){
+        if (!comment.isPresent()) {
             return Response.createFailureResponse("Comment does not exist");
         }
 
-        if(comment.get().getItem().getBoard().getId() != boardId){
-            return Response.createFailureResponse("Comment does not exist in board");
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(comment.get().getItem().getId(), board, "delete comment");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
 
-        long itemId = comment.get().getItem().getId();
         commentRepo.delete(comment.get());
-
-        return Response.createSuccessfulResponse(itemRepo.getReferenceById(itemId));
-
+        //todo check again if it returns the item without the comment
+        return Response.createSuccessfulResponse(itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get());
     }
 
-    public Response<Item> updateImportance(long itemId, ItemImportance importance){
+    public Response<Item> updateImportance(Board board, User user, long itemId, ItemImportance importance) {
         if (importance == null) {
             return Response.createFailureResponse("can not update item importance");
         }
 
-        Optional<Item> optionalItem = itemRepo.findById(itemId);
-        if(!optionalItem.isPresent()){
-            return Response.createFailureResponse("can not update item importance- item does not exist");
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "update importance");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
         }
 
-        Item item = optionalItem.get();
+        Item item = itemExistsInBoardResponse.getData();
         item.setImportance(importance);
-
         return Response.createSuccessfulResponse(itemRepo.save(item));
+    }
+
+
+    public Response<Item> createSubItem(String title, User creator, Board board, long parentId) {
+        Response<Item> parentExistsInBoardResponse = itemExistsInBoard(parentId, board, "create sub item");
+        if(!parentExistsInBoardResponse.isSucceed()){
+            return parentExistsInBoardResponse;
+        }
+
+        Item parent = parentExistsInBoardResponse.getData();
+        Item subItem = itemRepo.save(Item.createItemFromParent(title, parent.getStatus(), board, creator, parent));
+        //todo: check if this lines are necessary
+//        parent.getChildren().add(subItem);
+//        itemRepo.save(parent);
+        return Response.createSuccessfulResponse(subItem);
     }
 
     public Optional<Item> getItem(long itemId) {
@@ -196,5 +182,18 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findByBoardId(boardId));
     }
 
+    private Response<Item> itemExistsInBoard(long itemId, Board board, String action){
+        Optional<Item> optItem = itemRepo.findById(itemId);
+
+        if (!optItem.isPresent()) {
+            return Response.createFailureResponse(String.format("Can not %s - Item does not exist", action));
+        }
+
+        if (!optItem.get().getBoard().equals(board)) {
+            return Response.createFailureResponse(String.format("Can not %s - Item does not exist in board", action));
+        }
+
+        return Response.createSuccessfulResponse(optItem.get());
+    }
 
 }
