@@ -36,6 +36,15 @@ public class NotificationController {
         }
     }
 
+    /**
+     * Initializes notifications for a specific user.
+     *
+     * @param userId The ID of the user whose notifications are to be initialized.
+     * @return response indicating the result of the operation.
+     * If the user is not found, a bad request response with a failure message is returned.
+     * If the operation is successful, an HTTP OK response with a null body is returned.
+     * If the operation fails, a bad request response with a null body is returned.
+     */
     @RequestMapping(value = "/initUserNotifications/{userId}", method = RequestMethod.POST)
     public ResponseEntity<Response<Notification>> initUserNotifications(@PathVariable Long userId) {
         Optional<User> user = userService.getUser(userId);
@@ -52,6 +61,13 @@ public class NotificationController {
         }
     }
 
+    /**
+     * This method retrieves a notification for a given user.
+     *
+     * @param userId The ID of the user to get the notification for.
+     * @return A ResponseEntity object, which contains a Response object
+     * with a Notification object if the request was successful and a failure message otherwise.
+     */
     @RequestMapping(value = "/get_user_notification", method = RequestMethod.GET)
     public ResponseEntity<Response<Notification>> getNotificationByUser(@RequestParam Long userId) {
 
