@@ -11,11 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import projectManagement.controller.entities.UserDTO;
 import projectManagement.controller.entities.UserLoginDTO;
 import projectManagement.controller.entities.UserRequest;
+import projectManagement.entities.Notification;
 import projectManagement.entities.Response;
+import projectManagement.entities.User;
 import projectManagement.service.AuthService;
+import projectManagement.service.NotificationService;
 import projectManagement.utils.Validation;
 
 import java.net.URI;
+import java.util.Optional;
 
 
 @RequestMapping(value = "/auth")
@@ -26,13 +30,14 @@ public class AuthController {
     private static Logger logger = LogManager.getLogger(AuthController.class.getName());
 
 
-
     @RequestMapping(value = "", method = RequestMethod.GET)
     public void saveUser() {
     }
 
     @Autowired
     AuthService authService;
+    @Autowired
+    NotificationService notificationService;
 
     /**
      * Register function is responsible for creating new users and adding them to the database.
@@ -47,6 +52,8 @@ public class AuthController {
         if (Validation.validateInputRegister(user)) {
             Response<UserDTO> response = authService.register(user);
             if (response.isSucceed()) {
+                Optional<User> userNotification = authService.getUser(response.getData().getId());
+                userNotification.ifPresent(value -> notificationService.initNotifications(value));
                 return ResponseEntity.ok().body(response);
             }
             return ResponseEntity.badRequest().body(response);
@@ -87,6 +94,14 @@ public class AuthController {
     public ResponseEntity<Response<UserLoginDTO>> loginGithub(@RequestParam String code) {
         logger.info("in AuthController -> loginGithub");
         Response<UserLoginDTO> response = authService.loginGithub(code);
+        Optional<User> userNotification = authService.getUser(response.getData().getUserId());
+        if (userNotification.isPresent()) {
+            Response<Notification> notificationsByUser = notificationService.getNotificationsByUser(userNotification.get());
+            if (!notificationsByUser.isSucceed()) {
+                //new user, need to init notification.
+                userNotification.ifPresent(value -> notificationService.initNotifications(value));
+            }
+        }
         return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
     }
 }
