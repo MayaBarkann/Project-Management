@@ -22,7 +22,7 @@ import java.io.IOException;
 public class PermissionFilter implements Filter {
     public static final Logger logger = LogManager.getLogger(PermissionFilter.class);
     PermissionsService permissionsService;
-    private static final String[] patterns = {"^/board/(filter|create_board|get_board).*$", "^/auth/.*$"};
+    private static final String[] patterns = {"^/board/(filter|create_board|get_board|get_items).*$", "^/auth/.*$"};
 
     public PermissionFilter(PermissionsService permissionsService){
         this.permissionsService = permissionsService;

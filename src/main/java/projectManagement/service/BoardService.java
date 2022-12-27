@@ -194,12 +194,6 @@ public class BoardService {
 
     //todo check validation
     public Response<String> assignUserRole(Board board, User user, UserRole role) {
-//        Optional<Board> optionalBoard = boardRepo.findById(boardId);
-//        if (!optionalBoard.isPresent()) {
-//            return Response.createFailureResponse("Can not assign user to board - board does not exist");
-//        }
-//
-//        Board board = optionalBoard.get();
         if(board == null){
             return Response.createFailureResponse("Can not assign user to board- board is null");
         }
@@ -212,6 +206,20 @@ public class BoardService {
         boardRepo.save(board);
 
         return Response.createSuccessfulResponse(String.format("Assigned role %s to user %s", role.name(), user.getName()));
+    }
+
+    public Response<Set<Item>> getItems(User user, long boardId){
+        Optional<Board> board = boardRepo.findById(boardId);
+        if(!board.isPresent()){
+            return Response.createFailureResponse("Board does not exist");
+        }
+
+        Response<UserRole> userExistsInBoard = userExistsInBoard(board.get(), user);
+        if(!userExistsInBoard.isSucceed()){
+            return Response.createFailureResponse(userExistsInBoard.getMessage());
+        }
+
+        return Response.createSuccessfulResponse(board.get().getItems());
     }
 
     public Response<String> removeUserRole(long boardId, User user) {
@@ -239,26 +247,8 @@ public class BoardService {
     }
 
 
-//    public Response<Board> delete(long boardId){
-//        Optional<Board> board = boardRepo.findById(boardId);
-//        if(board.isPresent()) {
-//            boardRepo.deleteById(boardId);
-//            return Response.createSuccessfulResponse(board.get());
-//        }
-//        return Response.createFailureResponse("no board id like that");
-//    }
 
-//    public Response<Board> rename(long boardId,String name){
-//        Optional<Board> board = boardRepo.findById(boardId);
-//        if(board.isPresent()) {
-//            // TODO: add update title in repo
-//            board.get().setTitle(name);
-//            boardRepo.deleteById(boardId);
-//            boardRepo.save(board.get());
-//            return Response.createSuccessfulResponse(board.get());
-//        }
-//        return Response.createFailureResponse("no board id like that");
-//    }
+
 
 
 }

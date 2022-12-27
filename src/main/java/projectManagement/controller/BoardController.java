@@ -15,6 +15,7 @@ import projectManagement.service.UserService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @RequestMapping(value = "/board")
@@ -180,6 +181,12 @@ public class BoardController {
         }
         Response<String> response = boardService.assignUserRole(board, user.get(), userRoleDTO.getRole());
         return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+    }
+
+    @RequestMapping(value = "/get_items", method = RequestMethod.GET)
+    public ResponseEntity<Response<Set<Item>>> getItems(@RequestAttribute User user, @RequestParam long boardId) {
+        Response<Set<Item>> responseGetItems = boardService.getItems(user, boardId);
+        return responseGetItems.isSucceed() ? ResponseEntity.ok().body(responseGetItems) : ResponseEntity.badRequest().body(responseGetItems);
     }
 
 
