@@ -39,14 +39,14 @@ class BoardServiceTest {
     }
 
         @Test
-    void testGetBoardById_withValidBoardId_returnsCorrectBoard() {
+    void testGetBoardById_withValidBoardId_returnCorrectBoard() {
         given(boardRepo.findById(boardId)).willReturn(Optional.of(board));
         Optional<Board> result = boardService.getBoardById(boardId);
         assertTrue(result.isPresent());
         assertEquals(board, result.get());
         }
     @Test
-    void testGetBoardById_withInValidBoardId_returnsnNoBoard() {
+    void testGetBoardById_withInValidBoardId_returnNoBoard() {
         given(boardRepo.findById(2L)).willReturn(Optional.empty());
         Optional<Board> result = boardService.getBoardById(2L);
         assertFalse(result.isPresent());
@@ -391,7 +391,8 @@ class BoardServiceTest {
     @Test
     public void testRemoveUserRole_Success() {
         User user = new User();
-        Response<String> response = boardService.removeUserRole(board, user);
+        given(boardRepo.findById(boardId)).willReturn(Optional.of(board));
+        Response<String> response = boardService.removeUserRole(boardId, user);
         assertTrue(response.isSucceed());
         assertEquals("Success", response.getData());
     }
@@ -399,9 +400,10 @@ class BoardServiceTest {
     public void testRemoveUserRole_BoardNotInRepo() {
         User user = new User();
         board = null;
-        Response<String> response = boardService.removeUserRole(board, user);
+        given(boardRepo.findById(boardId)).willReturn(Optional.empty());
+        Response<String> response = boardService.removeUserRole(boardId, user);
         assertFalse(response.isSucceed());
-        assertEquals("Can not remove user to board- board is null", response.getMessage());
+        assertEquals("Board does not exist", response.getMessage());
     }
 
 

@@ -73,13 +73,10 @@ public class BoardController {
      */
     @PostMapping("/create_board")
     public ResponseEntity<Response<Board>> createBoard(@RequestAttribute User user , @RequestBody String title) {
-//        Optional<User> admin = userService.getUser(userId);
         logger.info("In BoardController - creating new board");
-//        logger.info(admin.isPresent());
-//        if (!admin.isPresent()) {
-//            logger.error("In BoardController - can not create new board since this user does not exist");
-//            return ResponseEntity.badRequest().body(Response.createFailureResponse("Can not create board - user does not exist"));
-//        }
+        if(title==null || title.equals("")){
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("Title must not be empty"));
+        }
         return ResponseEntity.ok().body(boardService.createBoard(title, user));
     }
 
@@ -101,7 +98,6 @@ public class BoardController {
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
-
     }
 
     /**
