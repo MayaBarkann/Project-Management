@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
 public class PermissionFilter implements Filter {
     public static final Logger logger = LogManager.getLogger(PermissionFilter.class);
     PermissionsService permissionsService;
-    private static final String pattern = "(^/board/(filter|create_board|get_board|get_items).*$)|(^/auth/.*$)|(^/ws/.*$)|(^/user/get_boards.*$)";
+    private static final String pattern =
+            "(^/board/(filter|create_board|get_board|get_items).*$)|(^/auth/.*$)|(^/ws/.*$)|(^/user/get_boards.*$)|(^/notification/get_user_notification.*$)";
 
     public PermissionFilter(PermissionsService permissionsService){
         this.permissionsService = permissionsService;
