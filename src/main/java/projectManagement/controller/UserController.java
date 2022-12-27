@@ -32,7 +32,7 @@ public class UserController {
      * @param user - the user who just logged in.
      * @return - list of board, show the name of the board and the id.
      */
-    @GetMapping("get-Boards")
+    @GetMapping("/get_boards")
     public ResponseEntity<List<LoginBoardDTO>> getBoards(@RequestAttribute User user) {
         Response<List<LoginBoardDTO>> response = boardService.getBoards(user);
         return response.isSucceed() ? ResponseEntity.ok().body(response.getData()) : ResponseEntity.badRequest().body(null);

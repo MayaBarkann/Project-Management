@@ -19,7 +19,7 @@ import java.io.IOException;
 public class TokenFilterN implements Filter {
     public static final Logger logger = LogManager.getLogger(TokenFilterN.class);
     private final AuthService authService;
-    private static final String[] pattern = {"^/auth/.*$", "^/ws/.*$"};
+    private static final String pattern = "(^/auth/.*$)|(^/ws/.*$)";
 
     public TokenFilterN(AuthService authService) {
         this.authService = authService;
@@ -40,19 +40,14 @@ public class TokenFilterN implements Filter {
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-//        logger.info("Auth filter is working on the following request: " + servletRequest);
-//        Pattern pattern = Pattern.compile();
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         String requestUrl = httpRequest.getRequestURI();
         MutableHttpServletRequest req = new MutableHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse res = (HttpServletResponse) servletResponse;
-//        if (requestUrl.matches(pattern)) {
-//            System.out.println("here");
-//            filterChain.doFilter(req, res);
-//        }
-        if (requestUrl.matches(pattern[0]) || requestUrl.matches(pattern[1])) {
+
+        if (requestUrl.matches(pattern)) {
             filterChain.doFilter(req, res);
-//            servletResponse.getOutputStream().write("token is null".getBytes());
+
         } else {
             System.out.println(req.getRequestURL().toString());
             String authToken = req.getHeader("Authorization");
@@ -63,7 +58,7 @@ public class TokenFilterN implements Filter {
                     logger.info("passing request");
                     filterChain.doFilter(req, res);
                 } else {
-                    servletResponse.getOutputStream().write(tokenCorrect.getMessage().getBytes());
+//                    servletResponse.getOutputStream().write(tokenCorrect.getMessage().getBytes());
                     return;
                 }
             }

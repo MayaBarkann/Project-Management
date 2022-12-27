@@ -8,12 +8,8 @@ import lombok.Setter;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-@Data
 @Setter
 @Getter
 @Entity
@@ -37,7 +33,7 @@ public class Board {
     @MapKeyJoinColumn(name="user")
     private Map<User, UserRole> userRole = new HashMap<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Item> items = new HashSet<>();
 
     @Column(nullable = false)
@@ -54,7 +50,20 @@ public class Board {
         this.addUserRole(admin, UserRole.ADMIN);
     }
 
-    public Map<User, UserRole> addUserRole(User user,  UserRole userRole){
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return id == board.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public Map<User, UserRole> addUserRole(User user, UserRole userRole){
         this.userRole.put(user, userRole);
 
         return this.userRole;
