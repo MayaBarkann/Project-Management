@@ -22,9 +22,6 @@ import java.util.Optional;
 public class NotificationController {
     @Autowired
     NotificationService notificationService;
-    @Autowired
-    UserService userService;
-
 
     /**
      * This method retrieves a notification for a given user.
