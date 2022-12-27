@@ -9,12 +9,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import projectManagement.controller.entities.AddUserRoleDTO;
+import projectManagement.controller.entities.BoardDTO;
 import projectManagement.entities.Board;
 import projectManagement.entities.Response;
 import projectManagement.entities.User;
+import projectManagement.entities.UserRole;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
 import projectManagement.service.UserService;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,8 +77,15 @@ class BoardControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
-
-
+    @Test
+    public void addType_InvalidInput_returnsBadRequest() {
+        Board board = new Board();
+        String type = "";
+        Response<String> expectedResponse = Response.createFailureResponse("Type cant be empty");
+        given(boardService.addType(board, type)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.addType(board, type);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
 
     @Test
     void filterItems() {
@@ -81,22 +93,97 @@ class BoardControllerTest {
 
 
     @Test
-    void addStatus() {
+    void addStatus_valid_returnOk() {
+        Board board = new Board();
+        String status = "status";
+        Response<String> expectedResponse = Response.createSuccessfulResponse("Status added successfully");
+        given(boardService.addStatus(board, status)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.addStatus(board, status);
+        verify(socketsUtil).addBoardStatus(expectedResponse, board.getId());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+    @Test
+    void addStatus_Invalid_returnBadRequest() {
+        Board board = new Board();
+        String status = "";
+        Response<String> expectedResponse = Response.createFailureResponse("Status cannot be empty");
+        given(boardService.addStatus(board, status)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.addStatus(board, status);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    @Test
+    void removeStatus_valid_returnOk() {
+        Board board = new Board();
+        String status = "status";
+        Response<String> expectedResponse = Response.createSuccessfulResponse("Status added successfully");
+        given(boardService.removeStatus(board, status)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.removeStatus(board, status);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+    @Test
+    void removeStatus_Invalid_returnBadRequest() {
+        Board board = new Board();
+        String status = "";
+        Response<String> expectedResponse = Response.createFailureResponse("Status cannot be empty");
+        given(boardService.removeStatus(board, status)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.removeStatus(board, status);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
     @Test
-    void removeStatus() {
+    void removeType_valid_returnOk() {
+        Board board = new Board();
+        String type = "type";
+        Response<String> expectedResponse = Response.createSuccessfulResponse("Status added successfully");
+        given(boardService.removeType(board, type)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.removeType(board, type);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+    @Test
+    void removeType_Invalid_returnBadRequest() {
+        Board board = new Board();
+        String type = "type";
+        Response<String> expectedResponse = Response.createFailureResponse("Status cannot be empty");
+        given(boardService.removeType(board, type)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.removeType(board, type);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
     @Test
-    void removeType() {
+    void getBoard_validBoardId_returnBoard() {
+        Board board = new Board();
+        board.setId(1);
+        User user = new User();
+        Response<Board> expectedResponse = Response.createSuccessfulResponse(board);
+        given(boardService.getBoard(user,board.getId())).willReturn(expectedResponse);
+        ResponseEntity<BoardDTO> responseEntity = boardController.getBoard(user,board.getId());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
-
     @Test
-    void getBoard() {
+    void getBoard_InvalidBoardId_returnBadRequest() {
+        Board board = new Board();
+        board.setId(1);
+        User user = new User();
+        Response<Board> expectedResponse = Response.createFailureResponse("no board id");
+        given(boardService.getBoard(user,board.getId())).willReturn(expectedResponse);
+        ResponseEntity<BoardDTO> responseEntity = boardController.getBoard(user,board.getId());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
-
     @Test
-    void assignRoleToUser() {
+    void assignRoleToUser_wrongBoardId_returnBadRequest() {
+        Board board = new Board();
+        User user = new User();
+        ResponseEntity<String> responseEntity = boardController.assignRoleToUser(board,new AddUserRoleDTO("dvir@gmail.com", UserRole.USER));
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    @Test
+    void assignRoleToUser_BoardId_returnOk() {
+        Board board = new Board();
+        User user = new User();
+        Response<String> expectedResponse = Response.createSuccessfulResponse("no board id");
+        given(userService.getUserByEmail("dvir@gmail.com")).willReturn(Optional.of(user));
+        given(boardService.assignUserRole(board,user, UserRole.USER)).willReturn(expectedResponse);
+        ResponseEntity<String> responseEntity = boardController.assignRoleToUser(board,new AddUserRoleDTO("dvir@gmail.com", UserRole.USER));
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 }
