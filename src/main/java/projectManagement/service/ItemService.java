@@ -21,6 +21,12 @@ public class ItemService {
 
 
     public Response<Item> createItem(String title, String status, User creator, Board board){
+        if(creator == null){
+            return Response.createFailureResponse("Can not create item- creator user is null");
+        }
+        if(board == null){
+            return Response.createFailureResponse("Can not create item- board  is null");
+        }
         return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status, board, creator)));
     }
 

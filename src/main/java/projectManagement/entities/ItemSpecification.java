@@ -17,7 +17,7 @@ This class is used for defining a query for filtering Items
 public class ItemSpecification implements Specification<Item> {
     FilterItemDTO filter;
     @NonNull
-    private Long boardId;
+    private long boardId;
 
     //todo: check again about board being null - throw maybe exception?
 
@@ -34,9 +34,6 @@ public class ItemSpecification implements Specification<Item> {
     public Predicate toPredicate(Root<Item> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
-        if(this.boardId == null){
-            //todo
-        }
         predicates.add(criteriaBuilder.equal(root.get("board"), this.boardId));
 
         if (this.filter.getAssignedToId() != null) {
