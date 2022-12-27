@@ -22,6 +22,7 @@ import java.util.Set;
 public class ItemController {
     @Autowired
     ItemService itemService;
+    //TODO change to auth service
     @Autowired
     AuthService userService;
     @Autowired
@@ -66,16 +67,21 @@ public class ItemController {
         }
 
         return ResponseEntity.badRequest().body(createdItemResponse.getMessage());
-//todo: add live update
+
 
     }
 
 
     @DeleteMapping(value = "/delete_item")
     public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
+        //TODO check if the item is exist before deleting.
         Response<Item> response = itemService.deleteItem(itemId, board);
         if (response.isSucceed()) {
             socketsUtil.deleteItem(response, board.getId());
+
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
+            String notificationContent = "Item deleted" + response.getData().getTitle();
+            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_DELETED);
             return ResponseEntity.ok().body("Item was deleted successfully");
 
         } else {
@@ -98,7 +104,7 @@ public class ItemController {
 
         Response<Item> response = itemService.changeType(itemId, type, board);
         if (response.isSucceed()) {
-            //TODO check this one
+
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             return ResponseEntity.ok().body("Type changed successfully");
         }
@@ -114,11 +120,11 @@ public class ItemController {
             return ResponseEntity.badRequest().body("Status does not exist in board");
         }
 
-        Response<Item> response = itemService.changeStatus(itemId, status,board);
+        Response<Item> response = itemService.changeStatus(itemId, status, board);
         if (response.isSucceed()) {
 
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
-            //TODO this should be changed to user in board.
+
 
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
@@ -142,6 +148,11 @@ public class ItemController {
         Response<Item> response = itemService.changeDescription(itemId, description, board);
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
+            String notificationContent = "the data is changed in item" + response.getData().getTitle() + " new data is " + response.getData().getDescription();
+            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_DATA_CHANGED);
+
             return ResponseEntity.ok().body("Description has changed successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -165,6 +176,12 @@ public class ItemController {
         Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get(), board);
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+
+            //TODO check this function it the user got notification
+            Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
+            String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
+            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_ASSIGNED_TO_ME);
+
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.badRequest().body(response);
@@ -196,12 +213,15 @@ public class ItemController {
     @PostMapping("/add_comment")
     public ResponseEntity<String> addComment(@RequestAttribute User user, @RequestAttribute Board board, @RequestParam long itemId, @RequestBody String commentStr) {
         Response<Item> response = itemService.addComment(itemId, board, user, commentStr);
-        //todo: add live update
+
         if (response.isSucceed()) {
+
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "add comment" + response.getData().getTitle() + " new comment is added " + commentStr;
             notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_COMMENT_ADDED);
+
             return ResponseEntity.ok().body("Added comment successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -219,8 +239,15 @@ public class ItemController {
     @DeleteMapping("delete_comment")
     public ResponseEntity<String> deleteComment(@RequestAttribute User user, @RequestAttribute Board board, @RequestParam long commentId) {
         Response<Item> response = itemService.deleteComment(board, user, commentId);
-        //todo: add live update
-        return response.isSucceed() ? ResponseEntity.ok().body("Comment was deleted successfully") : ResponseEntity.badRequest().body(response.getMessage());
+        if (response.isSucceed()) {
+
+            socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
+
+            return ResponseEntity.ok().body("Comment was deleted successfully");
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+
     }
 
 
@@ -244,8 +271,14 @@ public class ItemController {
 //        }
 //        Item parentItem = optionalItem.get();
         Response<Item> response = itemService.createSubItem(title, user, board, parentItemId);
-        //todo: add live update
-        return response.isSucceed() ? ResponseEntity.ok("Sub Item was created successfully") : ResponseEntity.badRequest().body(response.getMessage());
+
+        if (response.isSucceed()) {
+
+            socketsUtil.createItem(response, response.getData().getBoard().getId());
+            return ResponseEntity.ok("Sub Item was created successfully");
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
     }
 
 }
