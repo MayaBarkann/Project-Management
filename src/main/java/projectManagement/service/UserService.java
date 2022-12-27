@@ -17,6 +17,7 @@ public class UserService {
 
     @Autowired
     UserRepo userRepo;
+
     public Optional<User> getUser(long userId) {
         logger.info("in UserService -> getUser by id: "+userId);
         return userRepo.findById(userId);
