@@ -41,7 +41,7 @@ public class BoardController {
      * @return response entity containing the items that match the filter
      */
     //todo: change boardId to requestAttribute
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     public ResponseEntity<Response<List<Item>>> filterItems(@RequestAttribute User user, @RequestParam long boardId, @RequestBody FilterItemDTO filter) {
         Optional<Board> board = boardService.getBoardById(boardId);
         logger.info("In BoardController - trying to filter items by properties");
