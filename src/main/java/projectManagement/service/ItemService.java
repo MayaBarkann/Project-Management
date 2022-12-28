@@ -20,6 +20,8 @@ public class ItemService {
     ItemRepo itemRepo;
     @Autowired
     CommentRepo commentRepo;
+    @Autowired
+    BoardRepo boardRepo;
 
     /**
      * This method creates an item in the given board under the given status.
@@ -47,15 +49,16 @@ public class ItemService {
      * @return successful Response containing the item that we deleted if we deleted the item,
      * otherwise failure Response containing the reason for failure
      */
-    public Response<Item> deleteItem(long itemId, Board board) {
-        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
-        if(!itemExistsInBoardResponse.isSucceed()){
-            return itemExistsInBoardResponse;
-        }
-
-        itemRepo.deleteById(itemId);
-        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
-    }
+//    public Response<Item> deleteItem(long itemId, Board board) {
+//        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
+//        if(!itemExistsInBoardResponse.isSucceed()){
+//            return itemExistsInBoardResponse;
+//        }
+//        board.removeItem(itemExistsInBoardResponse.getData());
+////        boardRepo.save(board);
+//        itemRepo.deleteById(itemId);
+//        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
+//    }
 
     /**
      * This method changes the type of the given item.
@@ -250,7 +253,7 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findByBoardId(boardId));
     }
 
-    private Response<Item> itemExistsInBoard(long itemId, Board board, String action){
+    public Response<Item> itemExistsInBoard(long itemId, Board board, String action){
         Optional<Item> optItem = itemRepo.findById(itemId);
 
         if (!optItem.isPresent()) {
