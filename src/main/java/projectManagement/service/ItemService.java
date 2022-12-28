@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.*;
+import projectManagement.repository.BoardRepo;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 

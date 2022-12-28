@@ -105,6 +105,11 @@ public class Board {
         return this.types;
     }
 
+    public Set<Item> removeItem(Item item){
+        this.items.remove(item);
+        return items;
+    }
+
 
     @Transactional
     public UserRole getUserRoleInBoard(User user){

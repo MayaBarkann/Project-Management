@@ -1,19 +1,17 @@
 package projectManagement.controller;
 
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.*;
+import projectManagement.controller.entities.CreateItem;
 import projectManagement.entities.*;
 import projectManagement.repository.UserRepo;
+import projectManagement.service.AuthService;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
-import projectManagement.service.AuthService;
 import projectManagement.service.NotificationService;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -74,6 +72,7 @@ public class ItemController {
     public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
         //TODO check if the item is exist before deleting.
         Response<Item> response = itemService.deleteItem(itemId, board);
+
         if (response.isSucceed()) {
             socketsUtil.deleteItem(response, board.getId());
 
