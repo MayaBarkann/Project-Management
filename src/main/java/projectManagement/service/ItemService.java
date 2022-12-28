@@ -7,6 +7,7 @@ import projectManagement.entities.*;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,15 @@ public class ItemService {
     @Autowired
     CommentRepo commentRepo;
 
-
+    /**
+     * This method creates an item in the given board under the given status.
+     * It checks that the given status exists in board.
+     * @param title the title of the new item
+     * @param status status if the item
+     * @param creator the user creating the new item
+     * @param board the board that the new item belongs to
+     * @return successful response if the item was created successfully otherwise return failure response
+     */
     public Response<Item> createItem(String title, String status, User creator, Board board) {
         if (creator == null) {
             return Response.createFailureResponse("Can not create item- creator user is null");
@@ -30,6 +39,13 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status, board, creator)));
     }
 
+    /**
+     * This method deletes the given item from the given board
+     * @param itemId the id of the item that we want to delete
+     * @param board
+     * @return successful Response containing the item that we deleted if we deleted the item,
+     * otherwise failure Response containing the reason for failure
+     */
     public Response<Item> deleteItem(long itemId, Board board) {
         Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
         if(!itemExistsInBoardResponse.isSucceed()){
@@ -40,6 +56,15 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
     }
 
+    /**
+     * This method changes the type of the given item.
+     * It checks that the type we want to change to exists in board and that the item belongs to the given board.
+     * @param itemId the id of the item we want to change the type
+     * @param type the type we want to assign to the item
+     * @param board
+     * @return successful Response containing the item with the new type if we succeeded changing the type,
+     * otherwise failure Response containing the reason for failure
+     */
     public Response<Item> changeType(long itemId, String type, Board board) {
         Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change type");
         if(!itemExistsInBoardResponse.isSucceed()){
@@ -53,6 +78,15 @@ public class ItemService {
         return Response.createSuccessfulResponse(item);
     }
 
+    /**
+     * This method changes the status of the given item.
+     * It checks that the status we want to change to exists in board and that the item belongs to the given board.
+     * @param itemId the id of the item we want to change its status
+     * @param status the status we want to assign to the item
+     * @param board
+     * @return successful Response containing the item with the new status if we succeeded changing the status,
+     * otherwise failure Response containing the reason for failure
+     */
     public Response<Item> changeStatus(long itemId, String status, Board board) {
         Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change status");
         if(!itemExistsInBoardResponse.isSucceed()){
@@ -70,6 +104,15 @@ public class ItemService {
         return Response.createSuccessfulResponse(item);
     }
 
+    /**
+     * This method changes the description of the given item.
+     * It checks that the item belongs to the given board.
+     * @param itemId the id of the item we want to update its description
+     * @param description the new description
+     * @param board
+     * @return successful Response containing the item with the new description if we succeeded changing the description,
+     * otherwise failure Response containing the reason for failure
+     */
     public Response<Item> changeDescription(long itemId, String description, Board board) {
         Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change description");
         if(!itemExistsInBoardResponse.isSucceed()){
@@ -82,7 +125,15 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.save(item));
     }
 
-
+    /**
+     * This method updates the item's assigned user. It checks the item exists in the given board and also that
+     * the given user we want to assign the item belongs to the given board
+     * @param itemId id of the item we want to update it's assigned user
+     * @param assignedToUser the user we want to assign the item to
+     * @param board
+     * @return successful Response containing the item with the new assigned user if we succeeded assigning the item,
+     * otherwise failure Response containing the reason for failure
+     */
     public Response<Item> changeAssignedToUser(long itemId, User assignedToUser, Board board) {
         Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "change assigned user");
         if(!itemExistsInBoardResponse.isSucceed()){
@@ -169,6 +220,21 @@ public class ItemService {
 //        parent.getChildren().add(subItem);
 //        itemRepo.save(parent);
         return Response.createSuccessfulResponse(subItem);
+    }
+
+    public Response<Item> updateDueDate(Board board, long itemId, LocalDate dueDate){
+        if (dueDate == null){
+            return Response.createFailureResponse("can not update item importance");
+        }
+
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "update due date");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
+        }
+
+        Item item = itemExistsInBoardResponse.getData();
+        item.setDueDate(dueDate);
+        return Response.createSuccessfulResponse(item);
     }
 
     public Optional<Item> getItem(long itemId) {
