@@ -12,6 +12,7 @@ import projectManagement.service.ItemService;
 import projectManagement.service.AuthService;
 import projectManagement.service.NotificationService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -192,20 +193,6 @@ public class ItemController {
     }
 
 
-//    @RequestMapping(value = "/getItem/{itemId}", method = RequestMethod.GET)
-//    public ResponseEntity<Response<Item>> getItem(@PathVariable Long itemId) {
-//
-//        Optional<Item> item = itemService.getItem(itemId);
-//        Response<Item> response = Response.createSuccessfulResponse(item.get());
-//        if (response.isSucceed()) {
-//            return ResponseEntity.ok().body(response);
-//        } else {
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//
-//
-//    }
-
     /**
      * Adds a comment to an item.
      *
@@ -289,5 +276,18 @@ public class ItemController {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
     }
+
+    @PostMapping("update_due_date")
+    public ResponseEntity<String> updateDueDate(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody LocalDate dueDate){
+        Response<Item> response = itemService.updateDueDate(board, itemId, dueDate);
+        if (response.isSucceed()) {
+            socketsUtil.updateItem(response.getData(), board.getId());
+            return ResponseEntity.ok("Item due date was updated successfully");
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+    }
+
+
 
 }
