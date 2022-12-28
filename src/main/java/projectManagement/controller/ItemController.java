@@ -13,6 +13,7 @@ import projectManagement.service.AuthService;
 import projectManagement.service.NotificationService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -278,8 +279,9 @@ public class ItemController {
     }
 
     @PostMapping("update_due_date")
-    public ResponseEntity<String> updateDueDate(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody LocalDate dueDate){
-        Response<Item> response = itemService.updateDueDate(board, itemId, dueDate);
+    public ResponseEntity<String> updateDueDate(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String dueDate) {
+        LocalDate localDueDate = LocalDate.parse(dueDate, DateTimeFormatter.ofPattern("MMM dd yyyy"));
+        Response<Item> response = itemService.updateDueDate(board, itemId, localDueDate);
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), board.getId());
             return ResponseEntity.ok("Item due date was updated successfully");
@@ -287,7 +289,6 @@ public class ItemController {
             return ResponseEntity.badRequest().body(response.getMessage());
         }
     }
-
 
 
 }

@@ -232,7 +232,8 @@ public class ItemService {
 
         Item item = itemExistsInBoardResponse.getData();
         item.setDueDate(dueDate);
-        return Response.createSuccessfulResponse(item);
+
+        return Response.createSuccessfulResponse(itemRepo.save(item));
     }
 
     public Optional<Item> getItem(long itemId) {
