@@ -61,17 +61,11 @@ public class PermissionFilter implements Filter {
                     if(hasPermissionResponse.isSucceed()) {
                         req.setAttribute("board", hasPermissionResponse.getData());
                         filterChain.doFilter(req,res);
-                    } else {
-                        servletResponse.getOutputStream().write(hasPermissionResponse.getMessage().getBytes());
-                        return;
                     }
                 }catch (NumberFormatException e){
-                    servletResponse.getOutputStream().write(e.getMessage().getBytes());
                     return;
                 }
             }
-
-            servletResponse.getOutputStream().write("board not found".getBytes());
         }
     }
 
