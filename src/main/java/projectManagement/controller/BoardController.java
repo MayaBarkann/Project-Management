@@ -112,6 +112,8 @@ public class BoardController {
 
     @PostMapping("/add_status")
     public ResponseEntity<String> addStatus(@RequestAttribute Board board, @RequestBody String status) {
+        logger.info("in board controller - trying to add_status");
+
         Response<String> response = boardService.addStatus(board, status);
         if (response.isSucceed()) {
             socketsUtil.addBoardStatus(response, board.getId());

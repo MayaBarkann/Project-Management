@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.*;
+import projectManagement.repository.BoardRepo;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 
@@ -19,6 +20,8 @@ public class ItemService {
     ItemRepo itemRepo;
     @Autowired
     CommentRepo commentRepo;
+    @Autowired
+    BoardRepo boardRepo;
 
     /**
      * This method creates an item in the given board under the given status.
@@ -46,15 +49,16 @@ public class ItemService {
      * @return successful Response containing the item that we deleted if we deleted the item,
      * otherwise failure Response containing the reason for failure
      */
-    public Response<Item> deleteItem(long itemId, Board board) {
-        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
-        if(!itemExistsInBoardResponse.isSucceed()){
-            return itemExistsInBoardResponse;
-        }
-
-        itemRepo.deleteById(itemId);
-        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
-    }
+//    public Response<Item> deleteItem(long itemId, Board board) {
+//        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
+//        if(!itemExistsInBoardResponse.isSucceed()){
+//            return itemExistsInBoardResponse;
+//        }
+//        board.removeItem(itemExistsInBoardResponse.getData());
+////        boardRepo.save(board);
+//        itemRepo.deleteById(itemId);
+//        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
+//    }
 
     /**
      * This method changes the type of the given item.
@@ -184,10 +188,11 @@ public class ItemService {
         if(!itemExistsInBoardResponse.isSucceed()){
             return itemExistsInBoardResponse;
         }
-
-        commentRepo.delete(comment.get());
+        Item item = itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get();
+        item.removeComment(comment.get());
+        commentRepo.deleteById(commentId);
         //todo check again if it returns the item without the comment
-        return Response.createSuccessfulResponse(itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get());
+        return Response.createSuccessfulResponse(item);
     }
 
     public Response<Item> updateImportance(Board board, User user, long itemId, ItemImportance importance) {

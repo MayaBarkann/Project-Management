@@ -300,5 +300,16 @@ public class BoardService {
         return Response.createSuccessfulResponse(ListBoards);
     }
 
+    public Response<Item> deleteItemFromBoard(Board board, Item item){
+        if(!boardRepo.findById(board.getId()).isPresent()){
+            return Response.createFailureResponse("Board does not exist");
+        }
+        board.removeItem(item);
+        boardRepo.save(board);
+        return Response.createSuccessfulResponse(item);
+    }
+
+
+
 
 }
