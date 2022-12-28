@@ -66,7 +66,6 @@ public class ItemService {
             subItem.setStatus(item.getStatus());
             itemRepo.save(subItem);
         }
-        //todo: add live update
         return Response.createSuccessfulResponse(item);
     }
 
@@ -182,7 +181,7 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.findByBoardId(boardId));
     }
 
-    private Response<Item> itemExistsInBoard(long itemId, Board board, String action){
+    public Response<Item> itemExistsInBoard(long itemId, Board board, String action){
         Optional<Item> optItem = itemRepo.findById(itemId);
 
         if (!optItem.isPresent()) {

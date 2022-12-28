@@ -45,65 +45,57 @@ public class NotificationService {
 
     }
 
-    public List<String> checkEmailNotification(NotifyWhen notifyWhen, Long boardId) {
-        List<String> emails = new ArrayList<>();
+    public String checkEmailNotification(User user, NotifyWhen notifyWhen) {
 
-        List<User> userInBoard = userRepo.findAll();
-//TODO this should be done for userInBoard
-        for (User user : userInBoard) {
-            Notification userNotification = notificationRepo.findByUser(user);
-            switch (notifyWhen) {
-                case ITEM_ASSIGNED_TO_ME:
-                    if (userNotification.getITEM_ASSIGNED_TO_ME() == NotificationType.EMAIL || userNotification.getITEM_ASSIGNED_TO_ME() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-                case ITEM_STATUS_CHANGED:
-                    if (userNotification.getITEM_STATUS_CHANGED() == NotificationType.EMAIL || userNotification.getITEM_STATUS_CHANGED() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-                case ITEM_COMMENT_ADDED:
-                    if (userNotification.getITEM_COMMENT_ADDED() == NotificationType.EMAIL || userNotification.getITEM_COMMENT_ADDED() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-                case ITEM_DELETED:
-                    if (userNotification.getITEM_DELETED() == NotificationType.EMAIL || userNotification.getITEM_DELETED() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-                case ITEM_DATA_CHANGED:
-                    if (userNotification.getITEM_DATA_CHANGED() == NotificationType.EMAIL || userNotification.getITEM_DATA_CHANGED() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-                case USER_ADDED_TO_THE_SYSTEM:
-                    if (userNotification.getUSER_ADDED_TO_THE_SYSTEM() == NotificationType.EMAIL || userNotification.getUSER_ADDED_TO_THE_SYSTEM() == NotificationType.EMAIL_POP) {
-                        emails.add(user.getEmail());
-                    }
-                    break;
-            }
-
-
+        Notification userNotification = notificationRepo.findByUser(user);
+        switch (notifyWhen) {
+            case ITEM_ASSIGNED_TO_ME:
+                if (userNotification.getITEM_ASSIGNED_TO_ME() == NotificationType.EMAIL || userNotification.getITEM_ASSIGNED_TO_ME() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
+            case ITEM_STATUS_CHANGED:
+                if (userNotification.getITEM_STATUS_CHANGED() == NotificationType.EMAIL || userNotification.getITEM_STATUS_CHANGED() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
+            case ITEM_COMMENT_ADDED:
+                if (userNotification.getITEM_COMMENT_ADDED() == NotificationType.EMAIL || userNotification.getITEM_COMMENT_ADDED() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
+            case ITEM_DELETED:
+                if (userNotification.getITEM_DELETED() == NotificationType.EMAIL || userNotification.getITEM_DELETED() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
+            case ITEM_DATA_CHANGED:
+                if (userNotification.getITEM_DATA_CHANGED() == NotificationType.EMAIL || userNotification.getITEM_DATA_CHANGED() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
+            case USER_ADDED_TO_THE_SYSTEM:
+                if (userNotification.getUSER_ADDED_TO_THE_SYSTEM() == NotificationType.EMAIL || userNotification.getUSER_ADDED_TO_THE_SYSTEM() == NotificationType.EMAIL_POP) {
+                    return (user.getEmail());
+                }
+                break;
         }
-        return emails;
+
+
+        return "";
     }
 
-    public void sendMails(Long boardId, NotifyWhen notifyWhen, String content) {
-        List<String> emails = checkEmailNotification(notifyWhen, boardId);
-        for (String email : emails) {
-            try {
-                Email.send(email, content, "project management");
-            } catch (Exception e) {
+    public void sendMails(String mail, User user, NotifyWhen notifyWhen, String content) {
+        String email = checkEmailNotification(user, notifyWhen);
+        try {
+            Email.send(email, content, "project management");
+        } catch (Exception e) {
 
-            }
         }
 
 
     }
 
-    //TODO
     public boolean checkPop(User user, NotifyWhen notifyWhen) {
 
         Notification userNotification = notificationRepo.findByUser(user);
@@ -143,14 +135,18 @@ public class NotificationService {
 
     }
 
-    public void sendNotification(Set<Long> allUsersInBoard, String notificationContent, long boardId, NotifyWhen notifyWhen) {
+    public void sendNotification(Set<Long> allUsersInBoard, String notificationContent, NotifyWhen notifyWhen) {
         for (long userId : allUsersInBoard) {
             Optional<User> user = userRepo.findById(userId);
             if (checkPop(user.get(), notifyWhen)) {
                 socketsUtil.pushNotification(user.get().getId(), notificationContent);
             }
+            String mail = checkEmailNotification(user.get(), notifyWhen);
+            if (mail != "") {
+                sendMails(mail, user.get(), notifyWhen, notificationContent);
+            }
         }
-        sendMails(boardId, notifyWhen, notificationContent);
+
     }
 
     public Response<Notification> updateUserNotification(User user, UpdateUserNotificationDTO updateUserNotificationDTO) {

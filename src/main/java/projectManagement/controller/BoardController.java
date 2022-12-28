@@ -89,7 +89,7 @@ public class BoardController {
      * @return response entity with successful response containing the new Type created if the given board exists,
      * otherwise returns bad request containing failure Response with the reason for failure.
      */
-    //todo: add live changes
+
     @PostMapping("/add_type")
     public ResponseEntity<String> addType(@RequestAttribute Board board, @RequestBody String type) {
         Response<String> response = boardService.addType(board, type);
@@ -204,7 +204,7 @@ public class BoardController {
         if (response.isSucceed()) {
             if (!userInBoard) {
                 String notificationContent = "user added ";
-                notificationService.sendNotification(allUsersInBoard, notificationContent, board.getId(), NotifyWhen.USER_ADDED_TO_THE_SYSTEM);
+                notificationService.sendNotification(allUsersInBoard, notificationContent,  NotifyWhen.USER_ADDED_TO_THE_SYSTEM);
             }
             return ResponseEntity.ok().body(response.getMessage());
         } else {
