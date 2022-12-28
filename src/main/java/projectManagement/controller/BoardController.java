@@ -157,7 +157,7 @@ public class BoardController {
 
         if (response.isSucceed()) {
             socketsUtil.deleteBoardType(response, board.getId());
-            //TODO update all the that has theseitem in live
+            //TODO update all the that has these item in live
             return ResponseEntity.ok().body(response.getMessage());
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());

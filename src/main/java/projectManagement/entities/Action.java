@@ -15,5 +15,6 @@ public enum Action {
     ADD_TYPE,
     REMOVE_TYPE,
     ASSIGN_ROLE_TO_USER,
-    CHANGE_ITEM_STATUS;
+    CHANGE_ITEM_STATUS,
+    UPDATE_DUE_DATE;
 }
