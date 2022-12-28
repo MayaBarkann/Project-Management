@@ -186,10 +186,11 @@ public class ItemService {
         if(!itemExistsInBoardResponse.isSucceed()){
             return itemExistsInBoardResponse;
         }
-
-        commentRepo.delete(comment.get());
+        Item item = itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get();
+        item.removeComment(comment.get());
+        commentRepo.deleteById(commentId);
         //todo check again if it returns the item without the comment
-        return Response.createSuccessfulResponse(itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get());
+        return Response.createSuccessfulResponse(item);
     }
 
     public Response<Item> updateImportance(Board board, User user, long itemId, ItemImportance importance) {
