@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -74,7 +75,20 @@ public class Item {
         this.creator = creator;
     }
 
-    public static Item createItemFromParent(String title, String status, Board board, User creator,Item parent) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id == item.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static Item createItemFromParent(String title, String status, Board board, User creator, Item parent) {
         Item item = new Item(title,status,board,creator);
         item.parent = parent;
         return item;

@@ -61,22 +61,26 @@ public class PermissionFilter implements Filter {
                     if(hasPermissionResponse.isSucceed()) {
                         req.setAttribute("board", hasPermissionResponse.getData());
                         filterChain.doFilter(req,res);
+                    }else{
+                        returnBadResponse(res, "You don't have the permissions to perform this action");
                     }
                 }catch (NumberFormatException e){
-                    return;
+                    returnBadResponse(res, "Can not parse board id " + e.getMessage() );
                 }
+            } else {
+                returnBadResponse(res, "Null pointer");
             }
         }
     }
 
-//    /**
-//     * Sends an error response to the client using status code 401, with message Unauthorized.
-//     * @param res, HttpServletResponse object, contains response to a servlet request.
-//     * @throws IOException, if an input or output exception occurs.
-//     */
-//    private void returnBadResponse(HttpServletResponse res) throws IOException {
-//        res.sendError(401, "Unauthorized");
-//    }
+    /**
+     * Sends an error response to the client using status code 401, with message Unauthorized.
+     * @param res, HttpServletResponse object, contains response to a servlet request.
+     * @throws IOException, if an input or output exception occurs.
+     */
+    private void returnBadResponse(HttpServletResponse res, String message) throws IOException {
+        res.sendError(401, message);
+    }
 
     private String getMethodNameFromUrl(ServletRequest request) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;

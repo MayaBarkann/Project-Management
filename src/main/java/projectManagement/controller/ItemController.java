@@ -1,19 +1,17 @@
 package projectManagement.controller;
 
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.*;
+import projectManagement.controller.entities.CreateItem;
 import projectManagement.entities.*;
 import projectManagement.repository.UserRepo;
+import projectManagement.service.AuthService;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
-import projectManagement.service.AuthService;
 import projectManagement.service.NotificationService;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -73,17 +71,28 @@ public class ItemController {
     @DeleteMapping(value = "/delete_item")
     public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
         //TODO check if the item is exist before deleting.
-        Response<Item> response = itemService.deleteItem(itemId, board);
-        if (response.isSucceed()) {
-            socketsUtil.deleteItem(response, board.getId());
+//        Response<Item> response = itemService.deleteItem(itemId, board);
+        if(board == null){
+            return ResponseEntity.badRequest().body("Board is null");
+        }
+
+        Response<Item> itemExistsInBoardResponse = itemService.itemExistsInBoard(itemId, board, "delete");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return ResponseEntity.badRequest().body(itemExistsInBoardResponse.getMessage());
+        }
+
+        Response<Item> deleteResponse = boardService.deleteItemFromBoard(board, itemExistsInBoardResponse.getData());
+
+        if (deleteResponse.isSucceed()) {
+            socketsUtil.deleteItem(deleteResponse, board.getId());
 
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
-            String notificationContent = "Item deleted" + response.getData().getTitle();
-            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_DELETED);
+            String notificationContent = "Item deleted" + deleteResponse.getData().getTitle();
+            notificationService.sendNotification(allUsersInBoard, notificationContent, deleteResponse.getData().getBoard().getId(), NotifyWhen.ITEM_DELETED);
             return ResponseEntity.ok().body("Item was deleted successfully");
 
         } else {
-            return ResponseEntity.badRequest().body(response.getMessage());
+            return ResponseEntity.badRequest().body(deleteResponse.getMessage());
         }
     }
 

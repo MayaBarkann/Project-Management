@@ -90,31 +90,31 @@ public class ItemControllerTest {
 
     }
 
-    @Test
-    public void deleteItem_withValidItemId_returnSuccessResponse() {
-        String title = "new item";
-        String status = "new status";
-
-        Item item = new Item(title, status, board, user);
-        Response<Item> successfulResponse = Response.createSuccessfulResponse(item);
-        given(itemService.deleteItem(item.getId(), board)).willReturn(successfulResponse);
-
-        ResponseEntity<String> item1 = itemController.deleteItem(board, item.getId());
-
-        verify(socketsUtil).deleteItem(successfulResponse, board.getId());
-
-
-        assertEquals(HttpStatus.OK, item1.getStatusCode());
-
-    }
-
-    @Test
-    public void deleteItem_withInvalidItemId_returnBadRequestResponse() {
-        long itemId = 2;
-        given(itemService.deleteItem(2, board)).willReturn(Response.createFailureResponse(null));
-        ResponseEntity<String> deleteItemResponse = itemController.deleteItem(board, itemId);
-        assertEquals(HttpStatus.BAD_REQUEST, deleteItemResponse.getStatusCode());
-    }
+//    @Test
+//    public void deleteItem_withValidItemId_returnSuccessResponse() {
+//        String title = "new item";
+//        String status = "new status";
+//
+//        Item item = new Item(title, status, board, user);
+//        Response<Item> successfulResponse = Response.createSuccessfulResponse(item);
+//        given(itemService.deleteItem(item.getId(), board)).willReturn(successfulResponse);
+//
+//        ResponseEntity<String> item1 = itemController.deleteItem(board, item.getId());
+//
+//        verify(socketsUtil).deleteItem(successfulResponse, board.getId());
+//
+//
+//        assertEquals(HttpStatus.OK, item1.getStatusCode());
+//
+//    }
+//
+//    @Test
+//    public void deleteItem_withInvalidItemId_returnBadRequestResponse() {
+//        long itemId = 2;
+//        given(itemService.deleteItem(2, board)).willReturn(Response.createFailureResponse(null));
+//        ResponseEntity<String> deleteItemResponse = itemController.deleteItem(board, itemId);
+//        assertEquals(HttpStatus.BAD_REQUEST, deleteItemResponse.getStatusCode());
+//    }
 
     @Test
     public void changeType_withValidType_returnSuccessResponse() {
