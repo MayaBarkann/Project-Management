@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.sql.Update;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -33,7 +34,7 @@ public class Board {
     @MapKeyJoinColumn(name="user")
     private Map<User, UserRole> userRole = new HashMap<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Item> items = new HashSet<>();
 
     @Column(nullable = false)
