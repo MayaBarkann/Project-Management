@@ -63,6 +63,10 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Comment> comments;
 
+    public void removeComment(Comment comment){
+        this.comments.remove(comment);
+    }
+
     public Item(String title, String status, Board board, User creator) {
         this.title = title;
         this.status = status;
