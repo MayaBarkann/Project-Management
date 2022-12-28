@@ -44,6 +44,12 @@ public class NotificationController {
         }
     }
 
+    /**
+     *
+     * @param user user to update the notification
+     * @param updateUserNotificationDTO
+     * @return
+     */
     @RequestMapping(value = "/update_user_notification", method = RequestMethod.PUT)
     public ResponseEntity<Response<Notification>> updateUserNotification(@RequestAttribute User user, @RequestBody UpdateUserNotificationDTO updateUserNotificationDTO) {
         if (user == null) {
