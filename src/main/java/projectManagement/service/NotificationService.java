@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 //import projectManagement.controller.entities.CreateItemDTO;
 import projectManagement.controller.SocketsUtil;
+import projectManagement.controller.entities.UpdateUserNotificationDTO;
 import projectManagement.entities.*;
 import projectManagement.repository.BoardRepo;
 import projectManagement.repository.NotificationRepo;
@@ -150,5 +151,20 @@ public class NotificationService {
             }
         }
         sendMails(boardId, notifyWhen, notificationContent);
+    }
+
+    public Response<Notification> updateUserNotification(User user, UpdateUserNotificationDTO updateUserNotificationDTO) {
+
+        Notification notificationByUser = notificationRepo.findByUser(user);
+        notificationByUser.setITEM_DELETED(updateUserNotificationDTO.getITEM_DELETED());
+        notificationByUser.setITEM_ASSIGNED_TO_ME(updateUserNotificationDTO.getITEM_ASSIGNED_TO_ME());
+        notificationByUser.setITEM_STATUS_CHANGED(updateUserNotificationDTO.getITEM_STATUS_CHANGED());
+        notificationByUser.setITEM_COMMENT_ADDED(updateUserNotificationDTO.getITEM_COMMENT_ADDED());
+        notificationByUser.setUSER_ADDED_TO_THE_SYSTEM(updateUserNotificationDTO.getUSER_ADDED_TO_THE_SYSTEM());
+        Notification savedNotification = notificationRepo.save(notificationByUser);
+
+        return Response.createSuccessfulResponse(savedNotification);
+
+
     }
 }

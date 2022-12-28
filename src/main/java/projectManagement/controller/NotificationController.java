@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 //import projectManagement.controller.entities.ChangeStatusDTO;
+import projectManagement.controller.entities.UpdateUserNotificationDTO;
 import projectManagement.entities.Item;
 import projectManagement.entities.Notification;
 import projectManagement.entities.Response;
@@ -32,7 +33,7 @@ public class NotificationController {
      */
     @RequestMapping(value = "/get_user_notification", method = RequestMethod.GET)
     public ResponseEntity<Response<Notification>> getNotificationByUser(@RequestAttribute User user) {
-        if(user == null) {
+        if (user == null) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse("User can not be null"));
         }
         Response<Notification> res = notificationService.getNotificationsByUser(user);
@@ -40,6 +41,22 @@ public class NotificationController {
             return ResponseEntity.ok().body(res);
         } else {
             return ResponseEntity.badRequest().body(res);
+        }
+    }
+
+    @RequestMapping(value = "/update_user_notification", method = RequestMethod.PUT)
+    public ResponseEntity<Response<Notification>> updateUserNotification(@RequestAttribute User user, @RequestBody UpdateUserNotificationDTO updateUserNotificationDTO) {
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("User can not be null"));
+        }
+        if (updateUserNotificationDTO == null) {
+            return ResponseEntity.badRequest().body(Response.createFailureResponse("update notification can not be null"));
+        }
+        Response<Notification> updatedNotification = notificationService.updateUserNotification(user, updateUserNotificationDTO);
+        if (updatedNotification.isSucceed()) {
+            return ResponseEntity.ok().body(updatedNotification);
+        } else {
+            return ResponseEntity.badRequest().body(updatedNotification);
         }
     }
 
