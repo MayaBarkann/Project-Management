@@ -7,6 +7,7 @@ import projectManagement.entities.*;
 import projectManagement.repository.CommentRepo;
 import projectManagement.repository.ItemRepo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -218,6 +219,21 @@ public class ItemService {
 //        parent.getChildren().add(subItem);
 //        itemRepo.save(parent);
         return Response.createSuccessfulResponse(subItem);
+    }
+
+    public Response<Item> updateDueDate(Board board, long itemId, LocalDate dueDate){
+        if (dueDate == null){
+            return Response.createFailureResponse("can not update item importance");
+        }
+
+        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "update due date");
+        if(!itemExistsInBoardResponse.isSucceed()){
+            return itemExistsInBoardResponse;
+        }
+
+        Item item = itemExistsInBoardResponse.getData();
+        item.setDueDate(dueDate);
+        return Response.createSuccessfulResponse(item);
     }
 
     public Optional<Item> getItem(long itemId) {
