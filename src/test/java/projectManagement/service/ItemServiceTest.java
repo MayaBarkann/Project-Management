@@ -37,7 +37,6 @@ public class ItemServiceTest {
     @Mock
     BoardService boardService;
 
-    //TODO change to auth service
     @Mock
     AuthService userService;
     @Mock
@@ -76,22 +75,7 @@ public class ItemServiceTest {
 
     }
 
-    @Test
-    public void deleteItem_withValidItemId_returnSuccessResponse() {
-        String title = "new item";
-        String status = "new status";
 
-        Item item = new Item(title, status, board, user);
-        Response<Item> successfulResponse = Response.createSuccessfulResponse(item);
-
-//        given(itemRepo.findById(item.getId())).willReturn(Optional.of(item));
-        given(itemService.itemExistsInBoard(item.getId(), board , "delete")).willReturn(successfulResponse);
-
-        Response<Item> deleteRes = itemService.deleteItem(item.getId(), board);
-        assertEquals(item ,deleteRes.getData());
-
-
-    }
 
     @Test
     public void deleteItem_withInvalidItemId_returnBadRequestResponse() {
@@ -215,10 +199,10 @@ public class ItemServiceTest {
 //
 //    }
 //
-//    @Test
-//    public void changeAssignedToUser_withValidUserId_returnSuccessResponse() {
+    @Test
+    public void changeAssignedToUser_withValidUserId_returnSuccessResponse() {
 
-//    }
+    }
 //
 //    @Test
 //    public void changeAssignedToUser_withInValidUserId_returnBadRequestResponse() {
