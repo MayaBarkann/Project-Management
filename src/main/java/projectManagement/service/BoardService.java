@@ -168,7 +168,6 @@ public class BoardService {
      * @param type  The type to be checked for in the board.
      * @return A response object indicating the success or failure of the request.
      */
-    //todo: check again
     public Response<String> typeExistsInBoard(Board board, String type) {
         if (board == null) {
             return Response.createFailureResponse("Board is null");
@@ -219,7 +218,6 @@ public class BoardService {
      * @return A response object indicating the success or failure of the request.
      * BadRequest if the board is null or the user is the admin (creator) of the board.
      */
-    //todo check validation
     public Response<String> assignUserRole(Board board, User user, UserRole role) {
         if (board == null) {
             return Response.createFailureResponse("Can not assign user to board- board is null");
@@ -277,7 +275,6 @@ public class BoardService {
      * @return A set of user IDs, representing the users associated with the given board.
      * If the board does not exist, null is returned.
      */
-    //todo delete this
     public Set<Long> getAllUsersInBoardByBoardId(long boardId) {
         Optional<Board> boardOptional = getBoardById(boardId);
         return boardOptional.map(board -> board.getUserRole().keySet().stream().map(User::getId).collect(Collectors.toSet())).orElse(null);

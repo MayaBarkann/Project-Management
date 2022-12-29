@@ -20,8 +20,7 @@ public class ItemService {
     ItemRepo itemRepo;
     @Autowired
     CommentRepo commentRepo;
-    @Autowired
-    BoardRepo boardRepo;
+
 
     /**
      * This method creates an item in the given board under the given status.
@@ -42,23 +41,6 @@ public class ItemService {
         return Response.createSuccessfulResponse(itemRepo.save(new Item(title, status, board, creator)));
     }
 
-    /**
-     * This method deletes the given item from the given board
-     * @param itemId the id of the item that we want to delete
-     * @param board
-     * @return successful Response containing the item that we deleted if we deleted the item,
-     * otherwise failure Response containing the reason for failure
-     */
-//    public Response<Item> deleteItem(long itemId, Board board) {
-//        Response<Item> itemExistsInBoardResponse = itemExistsInBoard(itemId, board, "delete");
-//        if(!itemExistsInBoardResponse.isSucceed()){
-//            return itemExistsInBoardResponse;
-//        }
-//        board.removeItem(itemExistsInBoardResponse.getData());
-////        boardRepo.save(board);
-//        itemRepo.deleteById(itemId);
-//        return Response.createSuccessfulResponse(itemExistsInBoardResponse.getData());
-//    }
 
     /**
      * This method changes the type of the given item.
@@ -191,7 +173,6 @@ public class ItemService {
         Item item = itemRepo.findById(itemExistsInBoardResponse.getData().getId()).get();
         item.removeComment(comment.get());
         commentRepo.deleteById(commentId);
-        //todo check again if it returns the item without the comment
         return Response.createSuccessfulResponse(item);
     }
 
@@ -219,9 +200,6 @@ public class ItemService {
 
         Item parent = parentExistsInBoardResponse.getData();
         Item subItem = itemRepo.save(Item.createItemFromParent(title, parent.getStatus(), board, creator, parent));
-        //todo: check if this lines are necessary
-//        parent.getChildren().add(subItem);
-//        itemRepo.save(parent);
         return Response.createSuccessfulResponse(subItem);
     }
 

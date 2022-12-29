@@ -23,16 +23,13 @@ import java.util.Set;
 public class ItemController {
     @Autowired
     ItemService itemService;
-    //TODO change to auth service
     @Autowired
     AuthService userService;
     @Autowired
     BoardService boardService;
     @Autowired
     SocketsUtil socketsUtil;
-    //TODO delete this
-    @Autowired
-    UserRepo userRepo;
+
     @Autowired
     NotificationService notificationService;
 
@@ -72,8 +69,6 @@ public class ItemController {
      */
     @DeleteMapping(value = "/delete_item")
     public ResponseEntity<String> deleteItem(@RequestAttribute Board board, @RequestParam long itemId) {
-        //TODO check if the item is exist before deleting.
-//        Response<Item> response = itemService.deleteItem(itemId, board);
         if(board == null){
             return ResponseEntity.badRequest().body("Board is null");
         }
@@ -179,7 +174,6 @@ public class ItemController {
      * @param userId The ID of the user to assign the item to.
      * @return An HTTP response with a message indicating whether the operation was successful or not.
      */
-    //todo
     @PutMapping("/change_item_assign_to_user")
     public ResponseEntity<Response<Item>> changeAssignToUser(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody long userId) {
         Optional<User> assignedUser = userService.getUser(userId);
@@ -193,7 +187,6 @@ public class ItemController {
         Response<Item> response = itemService.changeAssignedToUser(itemId, assignedUser.get(), board);
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
-            //TODO check this function it the user got notification
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
             notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_ASSIGNED_TO_ME);

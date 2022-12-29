@@ -44,7 +44,6 @@ public class BoardController {
      * @param filter - FilterItemDTO object containing the values of fields we want to perform the filter on
      * @return response entity containing the items that match the filter
      */
-    //todo: change boardId to requestAttribute
     @PostMapping("/filter")
     public ResponseEntity<Response<List<Item>>> filterItems(@RequestAttribute User user, @RequestParam long boardId, @RequestBody FilterItemDTO filter) {
         Optional<Board> board = boardService.getBoardById(boardId);
@@ -60,7 +59,6 @@ public class BoardController {
         if (!userExistsInBoard.isSucceed()) {
             return ResponseEntity.badRequest().body(Response.createFailureResponse(userExistsInBoard.getMessage()));
         }
-        //todo: go back and change the response
         return ResponseEntity.ok(itemService.filterItems(filter, boardId));
     }
 
@@ -131,14 +129,11 @@ public class BoardController {
      * @param status the status we want to remove
      * @return
      */
-    //todo: remove boardId since it seems redundant
     @DeleteMapping("/remove_status")
     public ResponseEntity<String> removeStatus(@RequestAttribute Board board, @RequestParam String status) {
-        //todo: need to remove all items from item table that has this status?
         Response<String> response = boardService.removeStatus(board, status);
         if (response.isSucceed()) {
             socketsUtil.deleteBoardStatus(response, board.getId());
-            //TODO remove all items that has this status through the socket
             return ResponseEntity.ok().body(response.getMessage());
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -159,7 +154,6 @@ public class BoardController {
 
         if (response.isSucceed()) {
             socketsUtil.deleteBoardType(response, board.getId());
-            //TODO update all the that has these item in live
             return ResponseEntity.ok().body(response.getMessage());
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -227,13 +221,5 @@ public class BoardController {
         Response<Set<Item>> responseGetItems = boardService.getItems(user, boardId);
         return responseGetItems.isSucceed() ? ResponseEntity.ok().body(responseGetItems) : ResponseEntity.badRequest().body(responseGetItems);
     }
-
-
-//    @DeleteMapping(value = "/remove-user-role")
-//    public ResponseEntity<Response<UserRoleInBoard>> removeUserRole(@RequestParam long boardId, @RequestBody AddUserRoleDTO userRoleDTO) {
-//        Optional<User> user = userService.getUserByEmail(userRoleDTO.getEmail());
-//        Response<UserRoleInBoard> response = boardService.removeUserRole(boardId, user.get(), userRoleDTO.getRole());
-//        return response.isSucceed() ? ResponseEntity.ok().body(response) : ResponseEntity.badRequest().body(response);
-//    }
 
 }
