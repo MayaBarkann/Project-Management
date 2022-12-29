@@ -19,7 +19,6 @@ public class ItemSpecification implements Specification<Item> {
     @NonNull
     private long boardId;
 
-    //todo: check again about board being null - throw maybe exception?
 
     /***
      * This method creates a query for filtering Items objects that match all given properties. We create a list of Predicate objects

@@ -60,15 +60,7 @@ class AuthServiceTest {
         assertFalse(authService.register(userReq).isSucceed());
     }
 
-    //    @Test
-//    public void givenNewEmail_whenRegisterUser_thenRegister() {
-//        given(userRepo.findByEmail(goodUser.getEmail())).willReturn(Optional.empty());
-//        userReq = new UserRequest(goodUser.getEmail(),goodUser.getPassword());
-//        given(userRepo.save(goodUser)).willReturn(goodUser);
-//        given(goodUser.getId()).willReturn(1L);
-//        given(authService.createUser(userReq, Provider.LOCAL)).willReturn(new UserDTO(goodUser));
-//        assertTrue(authService.register(userReq).isSucceed());
-//    }
+
     @Test
     public void givenNewEmail_whenRegisterUser_thenFailRegisterDuringCreation() {
         given(userRepo.findByEmail(goodUser.getEmail())).willReturn(Optional.empty());

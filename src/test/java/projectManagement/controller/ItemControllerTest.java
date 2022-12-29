@@ -1,7 +1,5 @@
 package projectManagement.controller;
 
-import com.google.api.client.http.HttpEncodingStreamingContent;
-import com.google.api.client.util.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,11 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import projectManagement.controller.entities.CreateItem;
 import projectManagement.entities.*;
-import projectManagement.repository.BoardRepo;
 import projectManagement.repository.ItemRepo;
 import projectManagement.service.*;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -40,9 +36,8 @@ public class ItemControllerTest {
     BoardService boardService;
     @Mock
     ItemService itemService;
-    //TODO change to auth service
     @Mock
-    AuthService userService;
+    AuthService authService;
     @Mock
     SocketsUtil socketsUtil;
     @Mock
@@ -89,32 +84,6 @@ public class ItemControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, item1.getStatusCode());
 
     }
-
-//    @Test
-//    public void deleteItem_withValidItemId_returnSuccessResponse() {
-//        String title = "new item";
-//        String status = "new status";
-//
-//        Item item = new Item(title, status, board, user);
-//        Response<Item> successfulResponse = Response.createSuccessfulResponse(item);
-//        given(itemService.deleteItem(item.getId(), board)).willReturn(successfulResponse);
-//
-//        ResponseEntity<String> item1 = itemController.deleteItem(board, item.getId());
-//
-//        verify(socketsUtil).deleteItem(successfulResponse, board.getId());
-//
-//
-//        assertEquals(HttpStatus.OK, item1.getStatusCode());
-//
-//    }
-//
-//    @Test
-//    public void deleteItem_withInvalidItemId_returnBadRequestResponse() {
-//        long itemId = 2;
-//        given(itemService.deleteItem(2, board)).willReturn(Response.createFailureResponse(null));
-//        ResponseEntity<String> deleteItemResponse = itemController.deleteItem(board, itemId);
-//        assertEquals(HttpStatus.BAD_REQUEST, deleteItemResponse.getStatusCode());
-//    }
 
     @Test
     public void changeType_withValidType_returnSuccessResponse() {
@@ -203,14 +172,9 @@ public class ItemControllerTest {
 
         Response<Item> successfulResponse = Response.createSuccessfulResponse(newItem);
         given(itemService.changeDescription(oldItem.getId(), newDescription, board)).willReturn(successfulResponse);
-
-//        given(itemService.changeStatus(oldItem.getId(), newStatus, board)).willReturn(successfulResponse);
-//        Set<Long> allUserInBoard = Stream.of(1L, 2L, 3L).collect(Collectors.toCollection(HashSet::new));
-//        given(boardService.getAllUsersInBoardByBoardId(board.getId())).willReturn(allUserInBoard);
         ResponseEntity<String> resItem = itemController.changeItemDescription(board, oldItem.getId(), newDescription);
 
         verify(socketsUtil).updateItem(successfulResponse.getData(), board.getId());
-//        verify(notificationService).sendNotification(allUserInBoard, "the status is changed in itemnew item new status is new status", board.getId(), NotifyWhen.ITEM_STATUS_CHANGED);
 
 
         assertEquals(HttpStatus.OK, resItem.getStatusCode());
@@ -238,11 +202,11 @@ public class ItemControllerTest {
         Item newItem = new Item(title, status, board, user);
         newItem.setAssignedToUser(assignedToUser);
 
-        given(userService.getUser(assignedToUser.getId())).willReturn(Optional.of(assignedToUser));
+        given(authService.getUser(assignedToUser.getId())).willReturn(Optional.of(assignedToUser));
         given(boardService.userExistsInBoard(board, assignedToUser)).willReturn(Response.createSuccessfulResponse(UserRole.USER));
         Response<Item> successfulResponse = Response.createSuccessfulResponse(newItem);
         given(itemService.changeAssignedToUser(oldItem.getId(), assignedToUser, board)).willReturn(successfulResponse);;
-        ResponseEntity<Response<Item>> resItem = itemController.changeAssignToUser(board, oldItem.getId(), assignedToUser.getId());
+       ResponseEntity<Response<Item>> resItem = itemController.changeAssignToUser(board, oldItem.getId(), assignedToUser.getId());
 
         verify(socketsUtil).updateItem(successfulResponse.getData(), board.getId());
 
@@ -257,7 +221,7 @@ public class ItemControllerTest {
     public void changeAssignToUser_withInValidUserId_returnBadRequestResponse() {
         long itemId = 2;
         long userId = 10;
-        given(userService.getUser(userId)).willReturn(Optional.empty());
+        given(authService.getUser(userId)).willReturn(Optional.empty());
         ResponseEntity<Response<Item>> changeAssignToUserResponse = itemController.changeAssignToUser(board, itemId, userId);
         assertEquals(HttpStatus.BAD_REQUEST, changeAssignToUserResponse.getStatusCode());
 

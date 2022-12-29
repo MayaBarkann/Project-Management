@@ -247,7 +247,6 @@ public class AuthService {
             logger.error("in AuthService -> createUser -> Email " + user.getEmail() + " already exists!");
             throw new IllegalArgumentException(String.format("Email %s already exists!", user.getEmail()));
         }
-        //todo: add init notification
         return new UserDTO(userRepo.save(User.CreateUser(user.getName(), user.getEmail(), bCryptPasswordEncoder.encode(user.getPassword()), provider)));
     }
 

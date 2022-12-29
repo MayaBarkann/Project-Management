@@ -14,6 +14,7 @@ import projectManagement.controller.entities.BoardDTO;
 import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
+import projectManagement.service.NotificationService;
 import projectManagement.service.UserService;
 
 import java.util.Arrays;
@@ -36,6 +37,8 @@ class BoardControllerTest {
     ItemService itemService;
     @Mock
     BoardService boardService;
+    @Mock
+    NotificationService notificationService;
     @Mock
     UserService userService;
     @Mock
