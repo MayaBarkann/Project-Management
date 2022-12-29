@@ -11,6 +11,7 @@ import projectManagement.controller.entities.FilterItemDTO;
 import projectManagement.entities.*;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
+import projectManagement.service.NotificationService;
 import projectManagement.service.UserService;
 
 import java.util.List;
@@ -31,6 +32,8 @@ public class BoardController {
     UserService userService;
     @Autowired
     SocketsUtil socketsUtil;
+    @Autowired
+    NotificationService notificationService;
 
 
     /***
@@ -86,7 +89,7 @@ public class BoardController {
      * @return response entity with successful response containing the new Type created if the given board exists,
      * otherwise returns bad request containing failure Response with the reason for failure.
      */
-    //todo: add live changes
+
     @PostMapping("/add_type")
     public ResponseEntity<String> addType(@RequestAttribute Board board, @RequestBody String type) {
         Response<String> response = boardService.addType(board, type);
@@ -196,8 +199,20 @@ public class BoardController {
         if (!user.isPresent()) {
             return ResponseEntity.badRequest().body("Can not assign role to user - user does not exist");
         }
+        Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
+        boolean userInBoard = false;
+
         Response<String> response = boardService.assignUserRole(board, user.get(), userRoleDTO.getRole());
-        return response.isSucceed() ? ResponseEntity.ok().body(response.getMessage()) : ResponseEntity.badRequest().body(response.getMessage());
+        if (response.isSucceed()) {
+            if (!userInBoard) {
+                String notificationContent = "user added ";
+                notificationService.sendNotification(allUsersInBoard, notificationContent,  NotifyWhen.USER_ADDED_TO_THE_SYSTEM);
+            }
+            return ResponseEntity.ok().body(response.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(response.getMessage());
+        }
+
     }
 
     /**

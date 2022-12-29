@@ -171,7 +171,7 @@ public class ItemControllerTest {
         ResponseEntity<String> resItem = itemController.changeStatus(board, oldItem.getId(), newStatus);
 
         verify(socketsUtil).updateItem(successfulResponse.getData(), board.getId());
-        verify(notificationService).sendNotification(allUserInBoard, "the status is changed in itemnew item new status is new status", board.getId(), NotifyWhen.ITEM_STATUS_CHANGED);
+        verify(notificationService).sendNotification(allUserInBoard, "the status is changed in itemnew item new status is new status", NotifyWhen.ITEM_STATUS_CHANGED);
 
 
         assertEquals(HttpStatus.OK, resItem.getStatusCode());
@@ -241,15 +241,10 @@ public class ItemControllerTest {
         given(userService.getUser(assignedToUser.getId())).willReturn(Optional.of(assignedToUser));
         given(boardService.userExistsInBoard(board, assignedToUser)).willReturn(Response.createSuccessfulResponse(UserRole.USER));
         Response<Item> successfulResponse = Response.createSuccessfulResponse(newItem);
-        given(itemService.changeAssignedToUser(oldItem.getId(), assignedToUser, board)).willReturn(successfulResponse);
-        //todo check if i should add these three rows.
-//        given(itemService.changeStatus(oldItem.getId(), newStatus, board)).willReturn(successfulResponse);
-//        Set<Long> allUserInBoard = Stream.of(1L, 2L, 3L).collect(Collectors.toCollection(HashSet::new));
-//        given(boardService.getAllUsersInBoardByBoardId(board.getId())).willReturn(allUserInBoard);
+        given(itemService.changeAssignedToUser(oldItem.getId(), assignedToUser, board)).willReturn(successfulResponse);;
         ResponseEntity<Response<Item>> resItem = itemController.changeAssignToUser(board, oldItem.getId(), assignedToUser.getId());
 
         verify(socketsUtil).updateItem(successfulResponse.getData(), board.getId());
-//        verify(notificationService).sendNotification(allUserInBoard, "the status is changed in itemnew item new status is new status", board.getId(), NotifyWhen.ITEM_STATUS_CHANGED);
 
 
         assertEquals(HttpStatus.OK, resItem.getStatusCode());
@@ -293,7 +288,7 @@ public class ItemControllerTest {
 
 
         verify(socketsUtil).updateItem(successfulResponse.getData(), board.getId());
-        verify(notificationService).sendNotification(allUserInBoard, "add commentnew item new comment is added new comment", board.getId(), NotifyWhen.ITEM_COMMENT_ADDED);
+        verify(notificationService).sendNotification(allUserInBoard, "add commentnew item new comment is added new comment", NotifyWhen.ITEM_COMMENT_ADDED);
 
 
         assertEquals(HttpStatus.OK, resItem.getStatusCode());

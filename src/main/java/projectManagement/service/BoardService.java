@@ -69,7 +69,6 @@ public class BoardService {
         }
         board.addStatus(status);
         boardRepo.save(board);
-        //todo live update
         return Response.createSuccessfulResponse(status);
     }
 

@@ -3,15 +3,17 @@ package projectManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projectManagement.controller.entities.CreateItem;
+import projectManagement.controller.entities.*;
 import projectManagement.entities.*;
 import projectManagement.repository.UserRepo;
-import projectManagement.service.AuthService;
 import projectManagement.service.BoardService;
 import projectManagement.service.ItemService;
+import projectManagement.service.AuthService;
 import projectManagement.service.NotificationService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -88,7 +90,7 @@ public class ItemController {
 
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "Item deleted" + deleteResponse.getData().getTitle();
-            notificationService.sendNotification(allUsersInBoard, notificationContent, deleteResponse.getData().getBoard().getId(), NotifyWhen.ITEM_DELETED);
+            notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_DELETED);
             return ResponseEntity.ok().body("Item was deleted successfully");
 
         } else {
@@ -139,7 +141,7 @@ public class ItemController {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
-            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_STATUS_CHANGED);
+            notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_STATUS_CHANGED);
             return ResponseEntity.ok().body("Status changed successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -161,7 +163,7 @@ public class ItemController {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the data is changed in item" + response.getData().getTitle() + " new data is " + response.getData().getDescription();
-            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_DATA_CHANGED);
+            notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_DATA_CHANGED);
 
             return ResponseEntity.ok().body("Description has changed successfully");
         } else {
@@ -194,7 +196,7 @@ public class ItemController {
             //TODO check this function it the user got notification
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "the status is changed in item" + response.getData().getTitle() + " new status is " + response.getData().getStatus();
-            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_ASSIGNED_TO_ME);
+            notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_ASSIGNED_TO_ME);
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.badRequest().body(response);
@@ -218,7 +220,7 @@ public class ItemController {
             socketsUtil.updateItem(response.getData(), response.getData().getBoard().getId());
             Set<Long> allUsersInBoard = boardService.getAllUsersInBoardByBoardId(board.getId());
             String notificationContent = "add comment" + response.getData().getTitle() + " new comment is added " + commentStr;
-            notificationService.sendNotification(allUsersInBoard, notificationContent, response.getData().getBoard().getId(), NotifyWhen.ITEM_COMMENT_ADDED);
+            notificationService.sendNotification(allUsersInBoard, notificationContent, NotifyWhen.ITEM_COMMENT_ADDED);
             return ResponseEntity.ok().body("Added comment successfully");
         } else {
             return ResponseEntity.badRequest().body(response.getMessage());
@@ -287,8 +289,9 @@ public class ItemController {
     }
 
     @PostMapping("update_due_date")
-    public ResponseEntity<String> updateDueDate(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody LocalDate dueDate){
-        Response<Item> response = itemService.updateDueDate(board, itemId, dueDate);
+    public ResponseEntity<String> updateDueDate(@RequestAttribute Board board, @RequestParam long itemId, @RequestBody String dueDate) {
+        LocalDate localDueDate = LocalDate.parse(dueDate, DateTimeFormatter.ofPattern("MMM dd yyyy"));
+        Response<Item> response = itemService.updateDueDate(board, itemId, localDueDate);
         if (response.isSucceed()) {
             socketsUtil.updateItem(response.getData(), board.getId());
             return ResponseEntity.ok("Item due date was updated successfully");
